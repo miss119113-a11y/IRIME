@@ -1,8 +1,7 @@
 """Compact public runner for the principal SPFRIME experiments.
 
-This script is intentionally smaller than the internal development harness. It keeps the
-paper-level configurations needed to reproduce the principal SPFRIME curves/tables and
-writes CSV summaries that can be regenerated without any external data files.
+The code contains the implementation-level simulation constants so the paper itself can
+remain focused on scientifically material settings. No external data files are required.
 """
 from __future__ import annotations
 
@@ -48,22 +47,38 @@ def assigned_errors(true_doa, est_doa):
     return C[r, c]
 
 
-def simulate(true_doa, snapshots, snr_db, rng, wavelength=1.0, per_source_snr=False):
+def deterministic_sources(k: int, snapshots: int) -> np.ndarray:
+    """Deterministic narrowband source sequences used in the formal simulations."""
+    base = np.array([0.1, 0.2, 0.3], dtype=float)
+    if k <= len(base):
+        freq = base[:k]
+    else:
+        freq = np.linspace(0.08, 0.08 + 0.04 * (k - 1), k)
+    n = np.arange(snapshots, dtype=float)
+    return np.exp(1j * 2.0 * np.pi * freq[:, None] * n[None, :])
+
+
+def simulate(true_doa, snapshots, snr_db, rng, wavelength=1.0, per_source_snr=False,
+             gaussian_sources=False, source_power=None):
     pos = uca_positions(wavelength)
     A = steering(true_doa, pos, wavelength)
     k = len(true_doa)
-    # Deterministic narrowband source sequences; exact code-level frequencies are not
-    # scientifically material to the paper and can be changed without changing the protocol.
-    n = np.arange(snapshots)
-    freq = np.linspace(0.11, 0.31, k, endpoint=True)
-    S = np.exp(1j * 2 * np.pi * freq[:, None] * n[None, :])
+    if gaussian_sources:
+        S = (rng.normal(size=(k, snapshots)) + 1j * rng.normal(size=(k, snapshots))) / np.sqrt(2.0)
+        power = np.mean(np.abs(S) ** 2, axis=1, keepdims=True)
+        S = S / np.sqrt(np.maximum(power, np.finfo(float).tiny))
+    else:
+        S = deterministic_sources(k, snapshots)
+    if source_power is not None:
+        S = np.asarray(source_power, float).reshape(-1, 1) ** 0.5 * S
     clean = A @ S
     if per_source_snr:
-        source_power = 1.0
-        noise_var = source_power * 10.0 ** (-snr_db / 10.0)
+        noise_var = 10.0 ** (-snr_db / 10.0)
     else:
         noise_var = (np.linalg.norm(clean, "fro") ** 2 / (pos.shape[0] * snapshots)) * 10.0 ** (-snr_db / 10.0)
-    noise = np.sqrt(noise_var / 2) * (rng.normal(size=clean.shape) + 1j * rng.normal(size=clean.shape))
+    noise = np.sqrt(noise_var / 2.0) * (
+        rng.normal(size=clean.shape) + 1j * rng.normal(size=clean.shape)
+    )
     return clean + noise, pos
 
 
@@ -82,7 +97,6 @@ def second_source_same_elevation(anchor, delta_deg):
     """Solve azimuth displacement giving exact great-circle spacing at fixed elevation."""
     th0, ph0 = np.deg2rad(anchor)
     d = np.deg2rad(delta_deg)
-    # cos(d)=sin^2(phi)+cos^2(phi) cos(dtheta)
     q = (np.cos(d) - np.sin(ph0) ** 2) / max(np.cos(ph0) ** 2, 1e-15)
     dth = np.arccos(np.clip(q, -1.0, 1.0))
     return np.array([(np.rad2deg(th0 + dth)) % 360.0, np.rad2deg(ph0)])
@@ -113,15 +127,20 @@ def run_resolution(trials, out_dir):
                 other = second_source_same_elevation(anchor, float(delta))
                 truth = np.vstack((anchor, other))
                 rng = np.random.default_rng(2000000 + int(100 * snr) + int(100 * delta) + r)
-                X, pos = simulate(truth, RESOLUTION_SNAPSHOTS, float(snr), rng, per_source_snr=True)
+                X, pos = simulate(
+                    truth, RESOLUTION_SNAPSHOTS, float(snr), rng,
+                    per_source_snr=True, gaussian_sources=True,
+                )
                 est = estimate(X, pos, 2, seed=3000000 + r)
                 e = assigned_errors(truth, est)
                 est_sep = float(spherical_error_deg(est[:1], est[1:2])[0, 0])
                 strict = bool(np.all(e < 0.49 * delta) and est_sep >= 0.5 * delta)
                 success += int(strict)
             rows.append((snr, delta, success / trials))
-    _write(out_dir / "resolution_strict_probability.csv",
-           ["snr_db", "spacing_deg", "strict_probability"], rows)
+    _write(
+        out_dir / "resolution_strict_probability.csv",
+        ["snr_db", "spacing_deg", "strict_probability"], rows,
+    )
 
 
 def _write(path, header, rows):
