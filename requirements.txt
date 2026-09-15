@@ -1,0 +1,7 @@
+# Reproduces the Python environment used for the final paper experiments.
+numpy==2.4.6
+scipy==1.17.1
+matplotlib==3.11.1
+scikit-learn==1.9.0
+pandas==3.0.5
+pytest==9.1.1
