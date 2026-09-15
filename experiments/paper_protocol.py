@@ -4,7 +4,8 @@ from __future__ import annotations
 import numpy as np
 
 M = 12
-RADIUS_OVER_WAVELENGTH = 0.5
+# Adjacent UCA chord length is lambda/2, hence r/lambda = 1/(4 sin(pi/M)).
+RADIUS_OVER_WAVELENGTH = 1.0 / (4.0 * np.sin(np.pi / M))
 EVIDENCE_STEP_DEG = 2.5
 CONDITIONAL_BUDGET = 896
 MONTE_CARLO_TRIALS = 500
@@ -32,11 +33,18 @@ CLOSE_PAIR_K5_SNRS_DB = (10.0, 20.0)
 CLOSE_PAIR_SNAPSHOTS = 1024
 UNEQUAL_POWER_K2_SNR_DB = 20.0
 UNEQUAL_POWER_GAPS_DB = (0.0, 6.0, 12.0)
+UNEQUAL_MID_ANCHOR = (107.43, 30.29)
+UNEQUAL_MID_BEARING_DEG = 0.0
+UNEQUAL_DIAGONAL_HIGH_ANCHOR = (209.53, 50.27)
+UNEQUAL_DIAGONAL_HIGH_BEARING_DEG = 45.0
 
 
 def uca_positions(wavelength: float = 1.0, m: int = M) -> np.ndarray:
-    """M-element horizontal UCA used in the paper."""
-    radius = RADIUS_OVER_WAVELENGTH * float(wavelength)
+    """Horizontal UCA with adjacent chord length wavelength/2."""
+    if int(m) != M:
+        radius = float(wavelength) / (4.0 * np.sin(np.pi / int(m)))
+    else:
+        radius = RADIUS_OVER_WAVELENGTH * float(wavelength)
     alpha = 2.0 * np.pi * np.arange(m) / m
     return np.column_stack((radius * np.cos(alpha), radius * np.sin(alpha), np.zeros(m)))
 
