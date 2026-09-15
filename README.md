@@ -1,14 +1,14 @@
 # SPFRIME: 2D DOA estimation code
 
-This repository contains the algorithm and experiment code used for the SPFRIME manuscript on multi-source two-dimensional direction-of-arrival (DOA) estimation with a uniform circular array.
+This repository contains the public reference implementation and paper-level experiment code for SPFRIME, a multi-source two-dimensional direction-of-arrival (DOA) estimator for a uniform circular array.
 
 SPFRIME combines rank-truncated recursive projected-subspace initialization, recursion-aware selective subgrid fusion with exact projected-subspace rescoring, cyclic conditional-DML refinement driven by RIME, and bounded joint-DML refinement.
 
 ## Repository scope
 
-The repository intentionally contains code needed for the algorithm and reported experiments. Large raw Monte Carlo outputs, development prototypes, local virtual environments, IDE metadata, and retired experiment branches are excluded. The included runners create their own result directories under `results/`.
+This is a clean publication repository. It contains the method implementation, the principal experiment settings, a compact reproduction runner, and a smoke test. Development prototypes, virtual environments, IDE files, large Monte Carlo result folders, and obsolete branches are intentionally excluded.
 
-Some internal module names retain historical `v7h` identifiers because those files are the tested implementation used for the final numerical results. The paper method name is **SPFRIME**.
+The manuscript contains the scientific definitions needed to understand the method and experiments. Code-level generation details live here rather than being expanded in the paper.
 
 ## Environment
 
@@ -16,83 +16,95 @@ Python 3.11 is recommended.
 
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+# source .venv/bin/activate
+
 python -m pip install -r requirements.txt
 ```
 
-## Use SPFRIME as an estimator
+## Method implementation
+
+The self-contained reference implementation is:
+
+```text
+spfrime.py
+```
+
+Basic use:
 
 ```python
 from spfrime import trap_dml_rime
+
+azimuth, elevation = trap_dml_rime(
+    X,
+    array_pos,
+    wavelength,
+    theta_grid,
+    phi_grid,
+    k_sources,
+    evidence_step=2.5,
+    conditional_budget=896,
+    seed=0,
+)
 ```
 
-The paper configuration uses a projected-evidence step of 2.5 degrees and a conditional-search budget of 896 evaluations per source coordinate. The source count is assumed known, as stated in the manuscript.
+The source count is assumed known, consistent with the manuscript.
 
-## Reproduce the paper experiments
+## Paper-level settings
+
+The principal settings used by the public runner are collected in:
+
+```text
+experiments/paper_protocol.py
+```
+
+The final paper configuration uses:
+
+- 12-element UCA;
+- projected-evidence step `h = 2.5 deg`;
+- conditional-DML RIME budget `B = 896` per coordinate update;
+- two cyclic conditional-DML sweeps;
+- the same `h` as the half-width of the final bounded joint-DML refinement;
+- 500 Monte Carlo trials for the reported statistical experiments.
+
+## Reproduce the principal SPFRIME experiments
 
 Run from the repository root.
 
-### Full paper suite
+### Main SNR experiment
 
 ```bash
-python run_spfrime_experiments.py --trials 500 --workers 8
+python -m experiments.run_spfrime_paper --experiment main-snr --trials 500
 ```
 
-Equivalent direct command:
+### Exact spherical two-source resolution experiment
 
 ```bash
-python experiments/protocol/run_spfrime_final_kge3ms_b896_h25_suite.py --trials 500 --workers 8
+python -m experiments.run_spfrime_paper --experiment resolution --trials 500
 ```
 
-The suite covers the main SNR/snapshot/source-count experiments, exact two-source spherical-resolution experiments, robustness/generalization tests, mechanism ablation, evidence-step sensitivity, and the same-machine single-thread efficiency benchmark.
-
-### Individual experiments
-
-Main performance and robustness:
+### Both
 
 ```bash
-python experiments/protocol/run_v7h_legacy_paper_formal.py --trials 500 --workers 8 --methods rime_v7h_fusion
+python -m experiments.run_spfrime_paper --experiment all --trials 500
 ```
 
-Exact spherical two-source resolution:
+Generated CSV files are written to:
 
-```bash
-python experiments/protocol/run_v7h_azimuth_resolution_formal.py --phase paper_main --trials 500 --workers 8 --methods rime_v7h_fusion
+```text
+results/public_reproduction/
 ```
 
-Generalization:
+## Test
 
 ```bash
-python experiments/protocol/run_v7h_generalization_formal.py --trials 500 --workers 8 --methods rime_v7h_fusion
-```
-
-Ablation:
-
-```bash
-python experiments/protocol/run_v7h_ablation_formal.py --trials 500 --workers 8
-```
-
-Projected-evidence-step sensitivity at fixed `B=896`:
-
-```bash
-python experiments/protocol/run_spfrime_h_sensitivity_fixedB896_h25.py --trials 500 --workers 8
-```
-
-Single-thread efficiency benchmark:
-
-```bash
-python experiments/protocol/run_spfrime_final_serial_efficiency.py --trials 500 --warmup 5
-```
-
-## Regression tests
-
-```bash
-python -m pytest -q experiments/final_core_execution/tests
+python -m pytest -q tests/test_spfrime_smoke.py
 ```
 
 ## Reproducibility notes
 
-All methods in a paired Monte Carlo trial receive the same generated observation for a given condition/seed pair. The paper-facing runners fix the final SPFRIME settings and write manifests/audit files alongside generated results.
+The public code keeps the manuscript-level experimental definitions explicit while avoiding unnecessary internal development machinery. The repository can be extended with the remaining comparison-method runners if the full baseline reproduction package is released later.
 
-Objective-evaluation counts from heterogeneous estimators are not treated as equal-cost operations; wall-clock runtime is the implementation-level efficiency measure used in the manuscript.
+Objective-evaluation counts from heterogeneous estimators should not be interpreted as equal-cost operations; the manuscript uses measured wall-clock time for the implementation-level efficiency comparison.
