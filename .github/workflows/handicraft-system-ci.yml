@@ -34,19 +34,44 @@ jobs:
       - name: Build frontend
         working-directory: handicraft-system/frontend
         run: npm install && npm run build
-      - name: Start backend
+      - name: Install Chromium
+        working-directory: handicraft-system/frontend
+        run: |
+          npm install --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Start backend and frontend
         run: |
           nohup java -jar handicraft-system/backend/target/handicraft-system-0.0.1-SNAPSHOT.jar >/tmp/craft-backend.log 2>&1 &
-          for i in {1..50}; do curl -fsS http://127.0.0.1:8080/api/works/featured >/dev/null && exit 0; sleep 2; done
-          cat /tmp/craft-backend.log; exit 1
+          cd handicraft-system/frontend
+          nohup npm run dev -- --host 0.0.0.0 >/tmp/craft-frontend.log 2>&1 &
+          for i in {1..50}; do
+            if curl -fsS http://127.0.0.1:8080/api/works/featured >/dev/null && curl -fsS http://127.0.0.1:5173 >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/craft-backend.log; cat /tmp/craft-frontend.log; exit 1
       - name: API smoke JWT
         run: |
           LOGIN=$(curl -fsS -H 'Content-Type: application/json' -d '{"username":"user","password":"123456"}' http://127.0.0.1:8080/api/auth/login)
           TOKEN=$(echo "$LOGIN"|python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
           curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8080/api/auth/me
           curl -fsS -H "Authorization: Bearer $TOKEN" -X POST http://127.0.0.1:8080/api/favorites/work/1
-          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"rating":5,"content":"CI自动化评价"}' http://127.0.0.1:8080/api/reviews/work/1
+          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"rating":5,"content":"CI自动化评价：作品细节自然，定制流程清晰。"}' http://127.0.0.1:8080/api/reviews/work/1
+          curl -fsS -H 'Content-Type: application/json' -d '{"username":"ciuser","password":"123456","email":"ciuser@example.com","displayName":"CI用户"}' http://127.0.0.1:8080/api/auth/register
+      - name: Capture V2 screenshots
+        working-directory: handicraft-system/frontend
+        run: node scripts/screenshot.mjs
+      - name: Upload V2 screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-system-v2-preview
+          path: handicraft-system/frontend/screenshots/*.png
+          retention-days: 7
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
-        with: { name: handicraft-system-v2-logs, path: /tmp/craft-backend.log, retention-days: 7 }
+        with:
+          name: handicraft-system-v2-logs
+          path: |
+            /tmp/craft-backend.log
+            /tmp/craft-frontend.log
+          retention-days: 7
