@@ -1,6 +1,11 @@
 name: Handicraft System CI
 
 on:
+  push:
+    branches: [ handicraft-system-v1 ]
+    paths:
+      - 'handicraft-system/**'
+      - '.github/workflows/handicraft-system-ci.yml'
   pull_request:
     branches: [ main ]
     paths:
