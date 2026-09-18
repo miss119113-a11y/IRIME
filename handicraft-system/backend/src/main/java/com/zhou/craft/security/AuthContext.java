@@ -1,0 +1,2 @@
+package com.zhou.craft.security;
+public final class AuthContext{private static final ThreadLocal<UserPrincipal> H=new ThreadLocal<>();private AuthContext(){}public static void set(UserPrincipal u){H.set(u);}public static UserPrincipal require(){var u=H.get();if(u==null)throw new IllegalStateException("未登录或登录已过期");return u;}public static void clear(){H.remove();}public record UserPrincipal(Long id,String username,String displayName,String role){}}

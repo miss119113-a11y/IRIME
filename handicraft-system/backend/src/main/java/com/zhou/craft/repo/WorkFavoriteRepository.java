@@ -1,0 +1,2 @@
+package com.zhou.craft.repo;import com.zhou.craft.model.WorkFavorite;import org.springframework.data.jpa.repository.JpaRepository;import java.util.*;
+public interface WorkFavoriteRepository extends JpaRepository<WorkFavorite,Long>{Optional<WorkFavorite> findByUserIdAndWorkId(Long userId,Long workId);List<WorkFavorite> findByUserIdOrderByCreatedAtDesc(Long userId);}

@@ -1,16 +1,2 @@
-package com.zhou.craft.config;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173")
-                .allowedMethods("*")
-                .allowedHeaders("*");
-    }
-}
+package com.zhou.craft.config;import com.zhou.craft.security.AuthInterceptor;import org.springframework.context.annotation.Configuration;import org.springframework.web.servlet.config.annotation.*;
+@Configuration public class WebConfig implements WebMvcConfigurer{private final AuthInterceptor auth;public WebConfig(AuthInterceptor auth){this.auth=auth;}public void addCorsMappings(CorsRegistry r){r.addMapping("/api/**").allowedOrigins("http://localhost:5173","http://127.0.0.1:5173").allowedMethods("*").allowedHeaders("*");}public void addInterceptors(InterceptorRegistry r){r.addInterceptor(auth).addPathPatterns("/api/**");}}

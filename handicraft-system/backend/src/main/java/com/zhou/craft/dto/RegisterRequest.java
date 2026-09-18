@@ -1,0 +1,2 @@
+package com.zhou.craft.dto;import jakarta.validation.constraints.*;
+public record RegisterRequest(@NotBlank @Size(min=3,max=40)String username,@NotBlank @Size(min=6,max=40)String password,@Email @NotBlank String email,@NotBlank @Size(max=40)String displayName){}

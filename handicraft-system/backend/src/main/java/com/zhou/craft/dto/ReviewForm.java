@@ -1,0 +1,1 @@
+package com.zhou.craft.dto;import jakarta.validation.constraints.*;public record ReviewForm(@Min(1)@Max(5)int rating,@NotBlank @Size(max=500)String content){}
