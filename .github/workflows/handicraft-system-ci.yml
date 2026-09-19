@@ -36,36 +36,33 @@ jobs:
         run: npm install && npm run build
       - name: Install Chromium
         working-directory: handicraft-system/frontend
-        run: |
-          npm install --no-save playwright@1.48.2
-          npx playwright install --with-deps chromium
-      - name: Start backend and frontend
+        run: npm install --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+      - name: Start system
         run: |
           nohup java -jar handicraft-system/backend/target/handicraft-system-0.0.1-SNAPSHOT.jar >/tmp/craft-backend.log 2>&1 &
-          cd handicraft-system/frontend
-          nohup npm run dev -- --host 0.0.0.0 >/tmp/craft-frontend.log 2>&1 &
-          for i in {1..50}; do
-            if curl -fsS http://127.0.0.1:8080/api/works/featured >/dev/null && curl -fsS http://127.0.0.1:5173 >/dev/null; then exit 0; fi
-            sleep 2
-          done
-          cat /tmp/craft-backend.log; cat /tmp/craft-frontend.log; exit 1
-      - name: API smoke JWT
+          cd handicraft-system/frontend && nohup npm run dev -- --host 0.0.0.0 >/tmp/craft-frontend.log 2>&1 &
+          for i in {1..50}; do if curl -fsS http://127.0.0.1:8080/api/works/featured >/dev/null && curl -fsS http://127.0.0.1:5173 >/dev/null;then exit 0;fi;sleep 2;done
+          cat /tmp/craft-backend.log;exit 1
+      - name: API smoke full order lifecycle
         run: |
-          LOGIN=$(curl -fsS -H 'Content-Type: application/json' -d '{"username":"user","password":"123456"}' http://127.0.0.1:8080/api/auth/login)
-          TOKEN=$(echo "$LOGIN"|python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
-          curl -fsS -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8080/api/auth/me
-          curl -fsS -H "Authorization: Bearer $TOKEN" -X POST http://127.0.0.1:8080/api/favorites/work/1
-          curl -fsS -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"rating":5,"content":"CI自动化评价：作品细节自然，定制流程清晰。"}' http://127.0.0.1:8080/api/reviews/work/1
-          curl -fsS -H 'Content-Type: application/json' -d '{"username":"ciuser","password":"123456","email":"ciuser@example.com","displayName":"CI用户"}' http://127.0.0.1:8080/api/auth/register
+          U=$(curl -fsS -H 'Content-Type: application/json' -d '{"username":"user","password":"123456"}' http://127.0.0.1:8080/api/auth/login)
+          UT=$(echo "$U"|python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+          ORDERS=$(curl -fsS -H "Authorization: Bearer $UT" http://127.0.0.1:8080/api/orders)
+          OID=$(echo "$ORDERS"|python3 -c "import sys,json;d=json.load(sys.stdin);print(next(x['id'] for x in d if x['status']=='待支付'))")
+          curl -fsS -H "Authorization: Bearer $UT" -H 'Content-Type: application/json' -d '{"provider":"MOCK_WECHAT"}' http://127.0.0.1:8080/api/payments/order/$OID/pay
+          C=$(curl -fsS -H 'Content-Type: application/json' -d '{"username":"creator","password":"123456"}' http://127.0.0.1:8080/api/auth/login)
+          CT=$(echo "$C"|python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+          curl -fsS -X PUT -H "Authorization: Bearer $CT" -H 'Content-Type: application/json' -d '{"progress":100,"text":"CI制作完成"}' http://127.0.0.1:8080/api/orders/$OID/progress
+          curl -fsS -X POST -H "Authorization: Bearer $CT" -H 'Content-Type: application/json' -d '{"carrier":"顺丰速运（模拟）","trackingNo":""}' http://127.0.0.1:8080/api/logistics/order/$OID/ship
+          curl -fsS -X POST -H "Authorization: Bearer $CT" http://127.0.0.1:8080/api/logistics/order/$OID/advance
+          curl -fsS -X POST -H "Authorization: Bearer $CT" http://127.0.0.1:8080/api/logistics/order/$OID/advance
+          curl -fsS -X PUT -H "Authorization: Bearer $UT" http://127.0.0.1:8080/api/orders/$OID/complete
       - name: Capture V2 screenshots
         working-directory: handicraft-system/frontend
         run: node scripts/screenshot.mjs
       - name: Upload V2 screenshots
         uses: actions/upload-artifact@v4
-        with:
-          name: handicraft-system-v2-preview
-          path: handicraft-system/frontend/screenshots/*.png
-          retention-days: 7
+        with: { name: handicraft-system-v2-preview, path: handicraft-system/frontend/screenshots/*.png, retention-days: 7 }
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4

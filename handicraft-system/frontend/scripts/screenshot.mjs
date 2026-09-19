@@ -1,43 +1,10 @@
-import { chromium } from 'playwright'
-import fs from 'node:fs'
-
-fs.mkdirSync('screenshots',{recursive:true})
-const browser=await chromium.launch({headless:true})
-const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1})
-const base='http://127.0.0.1:5173'
-
-async function shot(path,name){
-  await page.goto(base+path,{waitUntil:'networkidle'})
-  await page.screenshot({path:'screenshots/'+name+'.png',fullPage:true})
-}
-async function clearSession(){
-  await page.goto(base+'/',{waitUntil:'domcontentloaded'})
-  await page.evaluate(()=>localStorage.clear())
-}
-async function loginAs(username){
-  await page.goto(base+'/login',{waitUntil:'networkidle'})
-  await page.locator('input').nth(0).fill(username)
-  await page.locator('input').nth(1).fill('123456')
-  await page.getByRole('button',{name:'登录',exact:true}).click()
-  await page.waitForTimeout(1000)
-}
-
-await clearSession()
-await shot('/','01-home')
-await shot('/works','02-works')
-await shot('/works/1','03-work-detail')
-await shot('/register','04-register')
-
-await loginAs('user')
-await shot('/custom','05-custom-user')
-await shot('/orders','06-orders-user')
-
-await clearSession()
-await loginAs('creator')
-await shot('/creator','07-creator')
-
-await clearSession()
-await loginAs('admin')
-await shot('/admin','08-admin')
-
-await browser.close()
+import{chromium}from'playwright';import fs from'node:fs';fs.mkdirSync('screenshots',{recursive:true});const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1440,height:1000}}),base='http://127.0.0.1:5173';
+async function shot(p,n){await page.goto(base+p,{waitUntil:'networkidle'});await page.screenshot({path:'screenshots/'+n+'.png',fullPage:true})}
+async function clear(){await page.goto(base+'/',{waitUntil:'domcontentloaded'});await page.evaluate(()=>localStorage.clear())}
+async function login(u){await page.goto(base+'/login',{waitUntil:'networkidle'});await page.locator('input').nth(0).fill(u);await page.locator('input').nth(1).fill('123456');await page.getByRole('button',{name:'登录',exact:true}).click();await page.waitForTimeout(700)}
+await clear();await shot('/','01-home');await shot('/works','02-works');await shot('/works/1','03-work-detail');await shot('/register','04-register');
+await login('user');await shot('/custom','05-custom-user');await shot('/orders','06-orders-before-payment');const pay=page.getByRole('button',{name:'模拟支付'}).first();if(await pay.count()){await pay.click();await page.waitForTimeout(700)}await page.screenshot({path:'screenshots/07-orders-after-payment.png',fullPage:true});
+await clear();await login('creator');await shot('/creator','08-creator-orders');
+await page.evaluate(async()=>{const t=localStorage.getItem('craft-token');const h={Authorization:'Bearer '+t,'Content-Type':'application/json'};let os=await fetch('/api/orders',{headers:h}).then(r=>r.json());let o=os.find(x=>x.status==='待制作')||os.find(x=>x.status==='制作中');if(o){if(o.status==='待制作')await fetch('/api/orders/'+o.id+'/progress',{method:'PUT',headers:h,body:JSON.stringify({progress:20,text:'开始准备材料'})});await fetch('/api/orders/'+o.id+'/progress',{method:'PUT',headers:h,body:JSON.stringify({progress:100,text:'作品制作完成并完成质检，等待发货'})});await fetch('/api/logistics/order/'+o.id+'/ship',{method:'POST',headers:h,body:JSON.stringify({carrier:'顺丰速运（模拟）',trackingNo:''})});await fetch('/api/logistics/order/'+o.id+'/advance',{method:'POST',headers:h});}});await page.waitForTimeout(600);await shot('/creator','09-creator-shipped');
+await clear();await login('user');await shot('/orders','10-orders-logistics');
+await clear();await login('admin');await shot('/admin','11-admin');await browser.close();

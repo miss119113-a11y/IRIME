@@ -1,26 +1,7 @@
 package com.zhou.craft.controller;
-
-import com.zhou.craft.dto.QuoteForm;
-import com.zhou.craft.model.Quote;
-import com.zhou.craft.repo.CustomRequestRepository;
-import com.zhou.craft.repo.QuoteRepository;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/quotes")
-public class QuoteController {
-    private final QuoteRepository quotes;
-    private final CustomRequestRepository requests;
-    public QuoteController(QuoteRepository quotes,CustomRequestRepository requests){this.quotes=quotes;this.requests=requests;}
-
-    @GetMapping
-    public List<Quote> list(@RequestParam Long requestId){return quotes.findByRequestIdOrderByPriceAsc(requestId);}
-
-    @PostMapping
-    public Quote create(@RequestBody QuoteForm f){
-        var q=quotes.save(new Quote(f.requestId(),f.creatorName(),f.price(),f.leadDays(),f.note()));
-        requests.findById(f.requestId()).ifPresent(r->{r.setStatus("已有报价");requests.save(r);});
-        return q;
-    }
+import com.zhou.craft.dto.QuoteForm;import com.zhou.craft.model.Quote;import com.zhou.craft.repo.*;import com.zhou.craft.security.AuthContext;import org.springframework.http.*;import org.springframework.web.bind.annotation.*;import org.springframework.web.server.ResponseStatusException;import java.util.*;
+@RestController @RequestMapping("/api/quotes")public class QuoteController{
+private final QuoteRepository quotes;private final CustomRequestRepository requests;public QuoteController(QuoteRepository q,CustomRequestRepository r){quotes=q;requests=r;}
+@GetMapping public List<Quote> list(@RequestParam Long requestId){var p=AuthContext.require();var r=requests.findById(requestId).orElseThrow();if("USER".equals(p.role())&&!p.id().equals(r.getUserId()))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"无权查看该需求报价");return quotes.findByRequestIdOrderByPriceAsc(requestId);}
+@PostMapping public Quote create(@RequestBody QuoteForm f){var p=AuthContext.require();if(!"CREATOR".equals(p.role()))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"仅创作者可以报价");requests.findById(f.requestId()).orElseThrow();var q=quotes.save(new Quote(f.requestId(),p.id(),p.displayName(),f.price(),f.leadDays(),f.note()));requests.findById(f.requestId()).ifPresent(r->{r.setStatus("已有报价");requests.save(r);});return q;}
 }

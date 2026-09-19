@@ -1,0 +1,1 @@
+package com.zhou.craft.service;import com.zhou.craft.model.*;import java.util.Optional;public interface PaymentService{PaymentRecord pay(CraftOrder order,String provider);PaymentRecord refund(CraftOrder order,String reason);Optional<PaymentRecord> findByOrderId(Long orderId);}

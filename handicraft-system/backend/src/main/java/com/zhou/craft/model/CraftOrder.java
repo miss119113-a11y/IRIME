@@ -1,46 +1,19 @@
 package com.zhou.craft.model;
-
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "craft_order")
-public class CraftOrder {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private Long requestId;
-    private Long quoteId;
-    private String workTitle;
-    private String customerName;
-    private String creatorName;
-    private double amount;
-    private String status;
-    private int progress;
-    private String progressText;
-    private LocalDateTime createdAt;
-    private LocalDateTime expectedAt;
-
-    public CraftOrder(){}
-    public CraftOrder(Long requestId,Long quoteId,String workTitle,String customerName,String creatorName,double amount,int leadDays){
-        this.requestId=requestId;this.quoteId=quoteId;this.workTitle=workTitle;this.customerName=customerName;this.creatorName=creatorName;
-        this.amount=amount;this.status="制作中";this.progress=20;this.progressText="已确认方案，准备材料";
-        this.createdAt=LocalDateTime.now();this.expectedAt=createdAt.plusDays(leadDays);
-    }
-    public Long getId(){return id;}
-    public Long getRequestId(){return requestId;}
-    public Long getQuoteId(){return quoteId;}
-    public String getWorkTitle(){return workTitle;}
-    public String getCustomerName(){return customerName;}
-    public String getCreatorName(){return creatorName;}
-    public double getAmount(){return amount;}
-    public String getStatus(){return status;}
-    public int getProgress(){return progress;}
-    public String getProgressText(){return progressText;}
-    public LocalDateTime getCreatedAt(){return createdAt;}
-    public LocalDateTime getExpectedAt(){return expectedAt;}
-    public void updateProgress(int progress,String text){
-        this.progress=Math.max(0,Math.min(progress,100));this.progressText=text;
-        this.status=this.progress>=100?"待确认":"制作中";
-    }
-    public void complete(){this.progress=100;this.progressText="作品已完成，用户已确认收货";this.status="已完成";}
+import jakarta.persistence.*;import java.time.LocalDateTime;
+@Entity @Table(name="craft_order")
+public class CraftOrder{
+public static final String PENDING_PAYMENT="待支付",PENDING_PRODUCTION="待制作",IN_PRODUCTION="制作中",PENDING_SHIPMENT="待发货",SHIPPED="已发货",IN_TRANSIT="运输中",PENDING_ACCEPTANCE="待验收",COMPLETED="已完成",CANCEL_REQUESTED="取消申请中",CANCELLED="已取消";
+@Id @GeneratedValue(strategy=GenerationType.IDENTITY)private Long id;private Long requestId;private Long quoteId;private Long customerId;private Long creatorId;private String workTitle;private String customerName;private String creatorName;private double amount;private String status;private int progress;private String progressText;private LocalDateTime createdAt;private LocalDateTime expectedAt;private LocalDateTime paidAt;private LocalDateTime completedAt;
+public CraftOrder(){}
+public CraftOrder(Long requestId,Long quoteId,Long customerId,Long creatorId,String workTitle,String customerName,String creatorName,double amount,int leadDays){this.requestId=requestId;this.quoteId=quoteId;this.customerId=customerId;this.creatorId=creatorId;this.workTitle=workTitle;this.customerName=customerName;this.creatorName=creatorName;this.amount=amount;this.status=PENDING_PAYMENT;this.progress=0;this.progressText="方案已确认，等待用户支付";this.createdAt=LocalDateTime.now();this.expectedAt=createdAt.plusDays(leadDays);}
+public Long getId(){return id;}public Long getRequestId(){return requestId;}public Long getQuoteId(){return quoteId;}public Long getCustomerId(){return customerId;}public Long getCreatorId(){return creatorId;}public String getWorkTitle(){return workTitle;}public String getCustomerName(){return customerName;}public String getCreatorName(){return creatorName;}public double getAmount(){return amount;}public String getStatus(){return status;}public int getProgress(){return progress;}public String getProgressText(){return progressText;}public LocalDateTime getCreatedAt(){return createdAt;}public LocalDateTime getExpectedAt(){return expectedAt;}public LocalDateTime getPaidAt(){return paidAt;}public LocalDateTime getCompletedAt(){return completedAt;}
+public void markPaid(){require(PENDING_PAYMENT);status=PENDING_PRODUCTION;progress=10;progressText="支付完成，等待创作者备料";paidAt=LocalDateTime.now();}
+public void updateProgress(int p,String text){if(!(PENDING_PRODUCTION.equals(status)||IN_PRODUCTION.equals(status)))throw new IllegalStateException("当前订单状态不能更新制作进度");progress=Math.max(10,Math.min(p,100));progressText=text;if(progress>=100){status=PENDING_SHIPMENT;progressText=text==null||text.isBlank()?"作品制作完成，等待发货":text;}else status=IN_PRODUCTION;}
+public void markShipped(){require(PENDING_SHIPMENT);status=SHIPPED;progress=100;progressText="作品已发货，等待物流运输";}
+public void markInTransit(){if(!SHIPPED.equals(status))throw new IllegalStateException("只有已发货订单才能进入运输中");status=IN_TRANSIT;progressText="包裹运输中";}
+public void markDelivered(){if(!(IN_TRANSIT.equals(status)||SHIPPED.equals(status)))throw new IllegalStateException("当前订单不能签收");status=PENDING_ACCEPTANCE;progressText="包裹已签收，等待用户验收";}
+public void complete(){require(PENDING_ACCEPTANCE);status=COMPLETED;progress=100;progressText="用户已验收，定制订单完成";completedAt=LocalDateTime.now();}
+public void requestCancel(){if(PENDING_PAYMENT.equals(status)){status=CANCELLED;progressText="订单已取消";return;}if(PENDING_PRODUCTION.equals(status)||IN_PRODUCTION.equals(status)||PENDING_SHIPMENT.equals(status)){status=CANCEL_REQUESTED;progressText="取消申请已提交，等待退款处理";return;}throw new IllegalStateException("当前订单状态不能申请取消");}
+public void markCancelledAfterRefund(){require(CANCEL_REQUESTED);status=CANCELLED;progressText="退款完成，订单已取消";}
+private void require(String expected){if(!expected.equals(status))throw new IllegalStateException("订单状态应为“"+expected+"”，当前为“"+status+"”");}
 }

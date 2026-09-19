@@ -1,0 +1,1 @@
+package com.zhou.craft.dto;public record RefundForm(String reason){}

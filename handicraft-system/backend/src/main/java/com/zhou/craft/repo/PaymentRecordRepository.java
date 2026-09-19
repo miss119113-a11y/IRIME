@@ -1,0 +1,1 @@
+package com.zhou.craft.repo;import com.zhou.craft.model.PaymentRecord;import org.springframework.data.jpa.repository.JpaRepository;import java.util.Optional;public interface PaymentRecordRepository extends JpaRepository<PaymentRecord,Long>{Optional<PaymentRecord> findByOrderId(Long orderId);}

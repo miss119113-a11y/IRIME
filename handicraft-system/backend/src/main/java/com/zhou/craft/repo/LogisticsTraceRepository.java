@@ -1,0 +1,1 @@
+package com.zhou.craft.repo;import com.zhou.craft.model.LogisticsTrace;import org.springframework.data.jpa.repository.JpaRepository;import java.util.*;public interface LogisticsTraceRepository extends JpaRepository<LogisticsTrace,Long>{List<LogisticsTrace> findByShipmentIdOrderByOccurredAtAsc(Long shipmentId);}

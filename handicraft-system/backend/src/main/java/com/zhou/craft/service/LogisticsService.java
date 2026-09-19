@@ -1,0 +1,1 @@
+package com.zhou.craft.service;import com.zhou.craft.dto.ShipForm;import com.zhou.craft.model.*;import java.util.*;public interface LogisticsService{Shipment ship(CraftOrder order,ShipForm form);Shipment advance(CraftOrder order);Optional<Shipment> findByOrderId(Long orderId);List<LogisticsTrace> traces(Long shipmentId);}
