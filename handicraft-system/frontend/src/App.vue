@@ -1,12 +1,8 @@
 <script setup>
-import {computed,ref,watch} from 'vue'
-import {useRoute,useRouter} from 'vue-router'
-const route=useRoute(),router=useRouter()
-const user=ref(JSON.parse(localStorage.getItem('craft-user')||'null'))
-const nav=computed(()=>[['/','发现手作'],['/works','作品集'],['/custom','个性定制'],['/orders','我的订单']])
-const current=computed(()=>route.path)
-function refresh(){user.value=JSON.parse(localStorage.getItem('craft-user')||'null')}
-watch(()=>route.path,refresh)
+import {computed,ref,watch} from 'vue';import {useRoute,useRouter} from 'vue-router'
+const route=useRoute(),router=useRouter(),user=ref(JSON.parse(localStorage.getItem('craft-user')||'null'))
+const nav=computed(()=>{const n=[['/','发现手作'],['/works','作品集']];if(user.value?.role==='USER')n.push(['/favorites','我的收藏'],['/custom','个性定制'],['/orders','我的订单']);return n})
+function refresh(){user.value=JSON.parse(localStorage.getItem('craft-user')||'null')}watch(()=>route.path,refresh)
 function logout(){localStorage.removeItem('craft-user');localStorage.removeItem('craft-token');user.value=null;router.push('/')}
 </script>
-<template><div class="app-shell"><header class="topbar"><div class="container topbar-inner"><div class="brand" @click="$router.push('/')"><div class="seal">拾</div><div><strong>拾作</strong><small>HANDMADE STUDIO</small></div></div><nav class="main-nav"><RouterLink v-for="n in nav" :key="n[0]" :to="n[0]" :class="{active:current===n[0]}">{{n[1]}}</RouterLink><RouterLink v-if="user?.role==='CREATOR'" to="/creator">创作台</RouterLink><RouterLink v-if="user?.role==='ADMIN'" to="/admin">管理后台</RouterLink></nav><div class="user-area"><template v-if="user"><span class="hello">{{user.displayName}}</span><button class="link-btn" @click="logout">退出</button></template><RouterLink v-else class="login-pill" to="/login">登录 / 注册</RouterLink></div></div></header><main><RouterView/></main><footer class="footer"><div class="container footer-inner"><div><b>拾作</b> · 手工艺作品展示与个性化定制系统</div><div>让每一件手作，都有专属故事</div></div></footer></div></template>
+<template><div class="app-shell"><header class="topbar"><div class="container topbar-inner"><div class="brand" @click="$router.push('/')"><div class="seal">拾</div><div><strong>拾作</strong><small>HANDMADE STUDIO</small></div></div><nav class="main-nav"><RouterLink v-for="n in nav" :key="n[0]" :to="n[0]">{{n[1]}}</RouterLink><RouterLink v-if="user?.role==='CREATOR'" to="/creator">创作台</RouterLink><RouterLink v-if="user?.role==='ADMIN'" to="/admin">管理后台</RouterLink></nav><div class="user-area"><template v-if="user"><span class="hello">{{user.displayName}}</span><button class="link-btn" @click="logout">退出</button></template><RouterLink v-else class="login-pill" to="/login">登录 / 注册</RouterLink></div></div></header><main><RouterView/></main><footer class="footer"><div class="container footer-inner"><div><b>拾作</b> · 手工艺作品展示与个性化定制系统</div><div>让每一件手作，都有专属故事</div></div></footer></div></template>

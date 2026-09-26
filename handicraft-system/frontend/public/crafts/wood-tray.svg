@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e6d5c5"/><stop offset="1" stop-color="#f7f1e8"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".16"/></filter></defs>
+<rect width="1200" height="900" fill="url(#g)"/><circle cx="960" cy="150" r="180" fill="#8b6042" opacity=".12"/><circle cx="190" cy="760" r="120" fill="#8b6042" opacity=".10"/>
+<g filter="url(#s)" transform="translate(600 420)"><rect x="-210" y="-115" width="420" height="250" rx="22" fill="#7a4e32"/><rect x="-185" y="-90" width="370" height="76" rx="14" fill="#a46d46"/><path d="M0 -115 V135" stroke="#d9b48b" stroke-width="10"/><circle cx="-35" cy="12" r="8" fill="#ead7bf"/><circle cx="35" cy="12" r="8" fill="#ead7bf"/></g>
+<text x="80" y="760" font-family="serif" font-size="64" font-weight="700" fill="#342d27">黑胡桃木托盘</text>
+<text x="84" y="816" font-family="sans-serif" font-size="28" fill="#7c6f63">木作 · 家居</text></svg>

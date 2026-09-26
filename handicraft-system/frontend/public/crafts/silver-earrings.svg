@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e8ecef"/><stop offset="1" stop-color="#f7f1e8"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".16"/></filter></defs>
+<rect width="1200" height="900" fill="url(#g)"/><circle cx="960" cy="150" r="180" fill="#71808a" opacity=".12"/><circle cx="190" cy="760" r="120" fill="#71808a" opacity=".10"/>
+<g filter="url(#s)" transform="translate(600 420)"><circle r="170" fill="none" stroke="#bfc6cc" stroke-width="28"/><circle r="95" fill="none" stroke="#e4e8eb" stroke-width="18"/><circle cx="0" cy="-170" r="24" fill="#8fa8b7"/></g>
+<text x="80" y="760" font-family="serif" font-size="64" font-weight="700" fill="#342d27">枝叶银耳饰</text>
+<text x="84" y="816" font-family="sans-serif" font-size="28" fill="#7c6f63">银饰 · 耳饰</text></svg>

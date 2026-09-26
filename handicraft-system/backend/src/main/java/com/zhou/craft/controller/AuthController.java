@@ -1,9 +1,15 @@
 package com.zhou.craft.controller;
 import com.zhou.craft.dto.*;import com.zhou.craft.model.UserAccount;import com.zhou.craft.repo.UserRepository;import com.zhou.craft.security.*;import jakarta.validation.Valid;import org.springframework.http.*;import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;import org.springframework.web.bind.annotation.*;import java.util.*;
 @RestController @RequestMapping("/api/auth") public class AuthController{
-private final UserRepository users;private final JwtService jwt;private final BCryptPasswordEncoder enc=new BCryptPasswordEncoder();public AuthController(UserRepository users,JwtService jwt){this.users=users;this.jwt=jwt;}
+private static final Set<String> RESERVED=Set.of("admin","creator","administrator","merchant","商户","管理员");
+private final UserRepository users;private final JwtService jwt;private final BCryptPasswordEncoder enc=new BCryptPasswordEncoder();
+public AuthController(UserRepository users,JwtService jwt){this.users=users;this.jwt=jwt;}
 @PostMapping("/login")public ResponseEntity<?> login(@Valid @RequestBody LoginRequest r){var u=users.findByUsername(r.username()).orElse(null);if(u==null||!u.isEnabled()||!enc.matches(r.password(),u.getPassword()))return ResponseEntity.status(401).body(Map.of("success",false,"message","用户名或密码错误"));return ResponseEntity.ok(body(u));}
-@PostMapping("/register")public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest r){if(users.existsByUsername(r.username()))return ResponseEntity.badRequest().body(Map.of("success",false,"message","用户名已存在"));if(users.existsByEmail(r.email()))return ResponseEntity.badRequest().body(Map.of("success",false,"message","邮箱已被注册"));var u=users.save(new UserAccount(r.username(),enc.encode(r.password()),r.email(),r.displayName(),"USER","https://api.dicebear.com/9.x/notionists/svg?seed="+r.username()));return ResponseEntity.status(201).body(body(u));}
+@PostMapping("/register")public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest r){
+String name=r.username().trim();if(RESERVED.contains(name.toLowerCase()))return ResponseEntity.badRequest().body(Map.of("success",false,"message","该用户名为系统保留账号，请更换用户名"));
+if(users.existsByUsername(name))return ResponseEntity.badRequest().body(Map.of("success",false,"message","用户名已存在"));
+if(users.existsByEmail(r.email()))return ResponseEntity.badRequest().body(Map.of("success",false,"message","邮箱已被注册"));
+var u=users.save(new UserAccount(name,enc.encode(r.password()),r.email(),r.displayName(),"USER","https://api.dicebear.com/9.x/notionists/svg?seed="+name));return ResponseEntity.status(201).body(body(u));}
 @GetMapping("/me")public Object me(){return body(users.findById(AuthContext.require().id()).orElseThrow());}
 private Map<String,Object> body(UserAccount u){Map<String,Object>m=new LinkedHashMap<>();m.put("success",true);m.put("id",u.getId());m.put("username",u.getUsername());m.put("displayName",u.getDisplayName());m.put("email",u.getEmail());m.put("role",u.getRole());m.put("avatar",u.getAvatar());m.put("token",jwt.create(u));return m;}
 }

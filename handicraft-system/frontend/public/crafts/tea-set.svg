@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ead4c4"/><stop offset="1" stop-color="#f7f1e8"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".16"/></filter></defs>
+<rect width="1200" height="900" fill="url(#g)"/><circle cx="960" cy="150" r="180" fill="#a9674c" opacity=".12"/><circle cx="190" cy="760" r="120" fill="#a9674c" opacity=".10"/>
+<g filter="url(#s)" transform="translate(600 420)"><ellipse cx="-70" cy="95" rx="170" ry="45" fill="#dad6cf"/><path d="M-220 -40 Q-200 150 60 140 Q80 -40 40 -110 H-170 Z" fill="#f0ece4"/><path d="M50 -40 Q190 -65 170 90" fill="none" stroke="#b8b0a5" stroke-width="30"/><circle cx="210" cy="105" r="70" fill="#ece7df"/><path d="M-150 0 Q-60 -90 20 -5" fill="none" stroke="#4c7090" stroke-width="14"/></g>
+<text x="80" y="760" font-family="serif" font-size="64" font-weight="700" fill="#342d27">青花茶席套装</text>
+<text x="84" y="816" font-family="sans-serif" font-size="28" fill="#7c6f63">陶艺 · 茶器</text></svg>

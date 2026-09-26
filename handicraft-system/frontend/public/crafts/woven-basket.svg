@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#e9dfc8"/><stop offset="1" stop-color="#f7f1e8"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".16"/></filter></defs>
+<rect width="1200" height="900" fill="url(#g)"/><circle cx="960" cy="150" r="180" fill="#75836b" opacity=".12"/><circle cx="190" cy="760" r="120" fill="#75836b" opacity=".10"/>
+<g filter="url(#s)" transform="translate(600 420)"><path d="M-190 -60 H190 L140 210 H-140 Z" fill="#b78955"/><path d="M-120 -55 Q-120 -220 0 -220 Q120 -220 120 -55" fill="none" stroke="#8d6139" stroke-width="25"/><path d="M-145 0 H145 M-135 65 H135 M-125 130 H125" stroke="#e1bd8d" stroke-width="12"/></g>
+<text x="80" y="760" font-family="serif" font-size="64" font-weight="700" fill="#342d27">藤编野餐篮</text>
+<text x="84" y="816" font-family="sans-serif" font-size="28" fill="#7c6f63">藤编 · 收纳</text></svg>
