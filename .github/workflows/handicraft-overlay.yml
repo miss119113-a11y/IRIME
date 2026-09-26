@@ -3,13 +3,7 @@ on:
   push:
     branches: [ handicraft-system-v2 ]
     paths:
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/model/CraftWork.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/model/WorkLike.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/repo/CraftWorkRepository.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/repo/WorkLikeRepository.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/controller/LikeController.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/controller/AuthController.java'
-      - 'handicraft-system/backend/src/main/java/com/zhou/craft/config/DataInitializer.java'
+      - 'handicraft-system/backend/src/main/java/com/zhou/craft/**'
       - 'handicraft-system/frontend/src/**'
       - 'handicraft-system/frontend/public/crafts/**'
       - '.github/workflows/handicraft-overlay.yml'
@@ -21,8 +15,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build overlay folder
         run: |
-          mkdir -p overlay/backend/src/main/java/com/zhou/craft/{model,repo,controller,config}
-          mkdir -p overlay/frontend/src/views overlay/frontend/public/crafts
+          mkdir -p overlay/backend/src/main/java/com/zhou/craft/model
+          mkdir -p overlay/backend/src/main/java/com/zhou/craft/repo
+          mkdir -p overlay/backend/src/main/java/com/zhou/craft/controller
+          mkdir -p overlay/backend/src/main/java/com/zhou/craft/config
+          mkdir -p overlay/frontend/src/views
+          mkdir -p overlay/frontend/public/crafts
           cp handicraft-system/backend/src/main/java/com/zhou/craft/model/CraftWork.java overlay/backend/src/main/java/com/zhou/craft/model/
           cp handicraft-system/backend/src/main/java/com/zhou/craft/model/WorkLike.java overlay/backend/src/main/java/com/zhou/craft/model/
           cp handicraft-system/backend/src/main/java/com/zhou/craft/repo/CraftWorkRepository.java overlay/backend/src/main/java/com/zhou/craft/repo/
@@ -39,12 +37,9 @@ jobs:
           cp handicraft-system/frontend/src/views/Register.vue overlay/frontend/src/views/
           cp handicraft-system/frontend/src/views/Favorites.vue overlay/frontend/src/views/
           cp -r handicraft-system/frontend/public/crafts/. overlay/frontend/public/crafts/
-          cat > overlay/覆盖说明.txt <<'EOF'
-直接把本压缩包内的 backend 和 frontend 两个文件夹复制到原 handicraft-system-v2-IDEA 根目录，选择“替换目标中的文件”。
-覆盖后无需删库；重新启动后端即可自动更新旧作品并补充新作品。
-新增：18件作品、图文统一、本地SVG素材、点赞、收藏页、自由客户注册、固定管理员/商户账号保护。
-EOF
-          cd overlay && zip -r ../handicraft-system-v2-覆盖包-作品点赞注册.zip .
+          printf '%s\n' '直接把本压缩包内的 backend 和 frontend 两个文件夹复制到原 handicraft-system-v2-IDEA 根目录，选择“替换目标中的文件”。' '覆盖后无需删库；重新启动后端即可自动更新旧作品并补充新作品。' '新增：18件作品、图文统一、本地SVG素材、点赞、收藏页、自由客户注册、固定管理员/商户账号保护。' > overlay/覆盖说明.txt
+          cd overlay
+          zip -r ../handicraft-system-v2-覆盖包-作品点赞注册.zip .
       - uses: actions/upload-artifact@v4
         with:
           name: handicraft-system-v2-overlay
