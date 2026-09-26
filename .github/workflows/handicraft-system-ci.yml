@@ -25,6 +25,19 @@ jobs:
       JWT_SECRET: handicraft-system-ci-secret-key-must-be-long-enough-2026
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create clean IDEA source package
+        run: |
+          cd handicraft-system
+          zip -r ../handicraft-system-v2-IDEA.zip .             -x "frontend/node_modules/*"                "frontend/dist/*"                "frontend/screenshots/*"                "backend/target/*"                "uploads/*"
+
+      - name: Upload IDEA source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-system-v2-IDEA
+          path: handicraft-system-v2-IDEA.zip
+          retention-days: 14
+
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '17', cache: maven }
       - name: Build backend
