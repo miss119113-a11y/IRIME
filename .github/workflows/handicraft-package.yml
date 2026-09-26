@@ -1,0 +1,24 @@
+name: Handicraft IDEA Package
+on:
+  push:
+    branches: [ handicraft-system-v2 ]
+    paths:
+      - 'handicraft-system/**'
+      - '.github/workflows/handicraft-package.yml'
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create clean project ZIP
+        run: |
+          cd handicraft-system
+          zip -r ../handicraft-system-v2-IDEA.zip .             -x "frontend/node_modules/*"                "frontend/dist/*"                "frontend/screenshots/*"                "backend/target/*"                "uploads/*"
+      - name: Upload project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-system-v2-IDEA
+          path: handicraft-system-v2-IDEA.zip
+          retention-days: 14
