@@ -1,0 +1,1 @@
+package com.zhou.craft.dto;import jakarta.validation.constraints.NotBlank;public record WorkStatusForm(@NotBlank String status){}

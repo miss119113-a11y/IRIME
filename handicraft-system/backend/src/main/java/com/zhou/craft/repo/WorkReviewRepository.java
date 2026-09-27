@@ -1,2 +1,2 @@
 package com.zhou.craft.repo;import com.zhou.craft.model.WorkReview;import org.springframework.data.jpa.repository.JpaRepository;import java.util.*;
-public interface WorkReviewRepository extends JpaRepository<WorkReview,Long>{List<WorkReview> findByWorkIdOrderByCreatedAtDesc(Long workId);Optional<WorkReview> findByUserIdAndWorkId(Long userId,Long workId);}
+public interface WorkReviewRepository extends JpaRepository<WorkReview,Long>{List<WorkReview> findByWorkIdOrderByCreatedAtDesc(Long workId);Optional<WorkReview> findByUserIdAndWorkId(Long userId,Long workId);List<WorkReview> findAllByOrderByCreatedAtDesc();}

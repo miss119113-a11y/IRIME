@@ -1,0 +1,1 @@
+package com.zhou.craft.dto;import jakarta.validation.constraints.*;public record ProfileForm(@NotBlank @Size(max=40)String displayName,@Email @NotBlank String email,String avatar){}

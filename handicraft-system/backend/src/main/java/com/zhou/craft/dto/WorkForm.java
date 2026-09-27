@@ -1,0 +1,1 @@
+package com.zhou.craft.dto;import jakarta.validation.constraints.*;public record WorkForm(@NotBlank @Size(max=80)String title,@NotBlank @Size(max=30)String category,@Positive double price,@Min(1)@Max(180)int leadDays,@NotBlank @Size(max=800)String summary,String image){}
