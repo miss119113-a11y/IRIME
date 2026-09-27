@@ -109,6 +109,24 @@ await shot(null,'10-customer-custom-request')
 await page.getByRole('button',{name:'发布需求，等待报价',exact:true}).click();await wait(900)
 await shot(null,'11-customer-custom-published')
 
+// Create a real quote/order for the newly published request so the payment screen is always testable,
+// even when the earlier CI smoke flow has already completed the seeded pending order.
+const myRequests=(await api('GET','/api/requests')).data
+const paymentRequest=myRequests.find(r=>r.title==='新居礼物·胡桃木桌面收纳架')
+if(paymentRequest){
+  const creatorAuth=await page.evaluate(async()=>{
+    const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'creator',password:'123456'})})
+    return await r.json()
+  })
+  const quoteCreated=await page.evaluate(async({token,requestId})=>{
+    const r=await fetch('/api/quotes',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({requestId,price:328,leadDays:9,note:'黑胡桃木主体，分区收纳结构，边角手工圆磨，支持名字浅刻。'})})
+    return await r.json()
+  },{token:creatorAuth.token,requestId:paymentRequest.id})
+  if(quoteCreated?.id)await api('POST','/api/orders/from-quote/'+quoteCreated.id)
+}
+// Keep another demand open so the creator demand hall and quote dialog have an actionable item.
+await api('POST','/api/requests',{title:'纪念日手缝皮革卡套',category:'皮艺',budgetMin:180,budgetMax:320,preferredMaterial:'植鞣牛皮',dueDate:'2026-10-25',description:'希望制作一只深棕色手缝卡套，6个卡位，正面压印姓名首字母，适合作为纪念日礼物。'})
+
 await shot('/orders','12-customer-orders-payment')
 const pay=page.getByRole('button',{name:'模拟支付'}).first()
 if(await pay.count()){await pay.click();await wait(900)}
