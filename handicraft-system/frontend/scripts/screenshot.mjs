@@ -35,7 +35,7 @@ await page.route('**/crafts-photo/*.png',async route=>{
   try{
     if(!imageCache.has(name)){
       const query=photoQueries[name]||'handmade,craft'
-      const r=await fetch('https://loremflickr.com/640/480/'+query+'?lock='+locks[name],{redirect:'follow'})
+      const r=await fetch('https://loremflickr.com/640/480/'+query+'?lock='+locks[name],{redirect:'follow',signal:AbortSignal.timeout(6000)})
       if(!r.ok)throw new Error('photo '+r.status)
       imageCache.set(name,Buffer.from(await r.arrayBuffer()))
     }
