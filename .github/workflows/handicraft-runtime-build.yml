@@ -1,0 +1,43 @@
+name: Handicraft Runtime Build
+on:
+  push:
+    branches: [ handicraft-system-v2 ]
+    paths:
+      - 'handicraft-system/backend/**'
+      - 'handicraft-system/frontend/**'
+      - '.github/workflows/handicraft-runtime-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SPRING_PROFILES_ACTIVE: dev
+      JWT_SECRET: handicraft-system-runtime-build-secret-key-long-enough-2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Build backend
+        run: mvn -q -f handicraft-system/backend/pom.xml clean package
+      - name: Upload backend jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-backend-runtime
+          path: handicraft-system/backend/target/handicraft-system-0.0.1-SNAPSHOT.jar
+          retention-days: 7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build frontend
+        working-directory: handicraft-system/frontend
+        run: npm install && npm run build
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-frontend-runtime
+          path: handicraft-system/frontend/dist
+          retention-days: 7
