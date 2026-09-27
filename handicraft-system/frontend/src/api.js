@@ -1,7 +1,9 @@
 import axios from 'axios'
 export const api=axios.create({baseURL:'/api',timeout:10000})
 api.interceptors.request.use(c=>{const t=localStorage.getItem('craft-token');if(t)c.headers.Authorization='Bearer '+t;return c})
+api.interceptors.response.use(r=>r,e=>{if(e.response?.status===401){localStorage.removeItem('craft-token');localStorage.removeItem('craft-user')}return Promise.reject(e)})
 export const login=d=>api.post('/auth/login',d);export const register=d=>api.post('/auth/register',d);export const getMe=()=>api.get('/auth/me')
+export const getProfile=()=>api.get('/profile');export const updateProfile=d=>api.put('/profile',d)
 export const getWorks=(params={})=>api.get('/works',{params});export const getWork=id=>api.get('/works/'+id);export const getFeatured=()=>api.get('/works/featured')
 export const getLikeStatus=id=>api.get('/likes/work/'+id);export const toggleLike=id=>api.post('/likes/work/'+id)
 export const getFavoriteStatus=id=>api.get('/favorites/work/'+id);export const toggleFavorite=id=>api.post('/favorites/work/'+id);export const getFavorites=()=>api.get('/favorites')
@@ -11,3 +13,8 @@ export const createOrderFromQuote=id=>api.post('/orders/from-quote/'+id);export 
 export const getPayment=id=>api.get('/payments/order/'+id);export const payOrder=(id,d)=>api.post('/payments/order/'+id+'/pay',d);export const refundOrder=(id,d)=>api.post('/payments/order/'+id+'/refund',d)
 export const getLogistics=id=>api.get('/logistics/order/'+id);export const shipOrder=(id,d)=>api.post('/logistics/order/'+id+'/ship',d);export const advanceLogistics=id=>api.post('/logistics/order/'+id+'/advance')
 export const getDashboard=()=>api.get('/dashboard')
+export const getCreatorWorks=()=>api.get('/creator/works');export const createCreatorWork=d=>api.post('/creator/works',d);export const updateCreatorWork=(id,d)=>api.put('/creator/works/'+id,d);export const deleteCreatorWork=id=>api.delete('/creator/works/'+id)
+export const uploadCreatorWork=file=>{const fd=new FormData();fd.append('file',file);return api.post('/creator/works/upload',fd,{headers:{'Content-Type':'multipart/form-data'}})}
+export const getAdminUsers=()=>api.get('/admin/users');export const setAdminUserEnabled=(id,enabled)=>api.put('/admin/users/'+id+'/enabled',null,{params:{enabled}})
+export const getAdminWorks=()=>api.get('/admin/works');export const setAdminWorkStatus=(id,status)=>api.put('/admin/works/'+id+'/status',{status});export const setAdminWorkFeatured=(id,featured)=>api.put('/admin/works/'+id+'/featured',null,{params:{featured}})
+export const getAdminReviews=()=>api.get('/admin/reviews');export const deleteAdminReview=id=>api.delete('/admin/reviews/'+id);export const getAdminStats=()=>api.get('/admin/stats')
