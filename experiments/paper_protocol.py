@@ -1,54 +1,57 @@
-"""Paper-level experimental settings used by the public SPFRIME code."""
+"""Frozen paper-level settings for the IRIME manuscript."""
 from __future__ import annotations
 
 import numpy as np
 
 M = 12
-# Adjacent UCA chord length is lambda/2, hence r/lambda = 1/(4 sin(pi/M)).
 RADIUS_OVER_WAVELENGTH = 1.0 / (4.0 * np.sin(np.pi / M))
-EVIDENCE_STEP_DEG = 2.5
+H_DEG = 2.5
 CONDITIONAL_BUDGET = 896
+CYCLIC_SWEEPS = 2
 MONTE_CARLO_TRIALS = 500
 THETA_RANGE = (0.0, 360.0)
 PHI_RANGE = (0.0, 90.0)
 
-# Nominal three-source geometry used in the main SNR/snapshot/robustness tests.
 NOMINAL_THETA = np.array([30.42, 120.27, 240.51], dtype=float)
 NOMINAL_PHI = np.array([60.39, 29.42, 45.55], dtype=float)
+SNR_SWEEP_DB = np.array([-5, -3, -1, 1, 3, 5], dtype=float)
+SNAPSHOT_SWEEP = np.array([50, 100, 200, 300, 500], dtype=int)
 
-# Exact spherical two-source resolution protocol.
+SOURCE_COUNT_K = tuple(range(2, 10))
+SOURCE_COUNT_SNAPSHOTS = 300
+SOURCE_COUNT_PER_SOURCE_SNR_DB = 10.0
+GOLDEN_FRACTION = (np.sqrt(5.0) - 1.0) / 2.0
+
 RESOLUTION_ANCHOR = (83.17, 35.29)
 RESOLUTION_SPACINGS_DEG = np.array(
-    [0.25, 0.5, 1.0, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0,
-     3.25, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0], dtype=float)
+    [0.25, 0.5, 1.0, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75,
+     3.0, 3.25, 3.5, 4.0, 5.0, 6.0, 8.0, 10.0], dtype=float)
 RESOLUTION_SNRS_DB = (10.0, 20.0)
 RESOLUTION_SNAPSHOTS = 1024
-
-# Generalization protocol reported in the manuscript.
-GENERALIZATION_SEPARATED_K = (3, 5, 7)
-GENERALIZATION_SEPARATED_SNR_DB = 10.0
-GENERALIZATION_SEPARATED_SNAPSHOTS = 300
-CLOSE_PAIR_SPACING_DEG = 4.0
-CLOSE_PAIR_K5_SNRS_DB = (10.0, 20.0)
-CLOSE_PAIR_SNAPSHOTS = 1024
-UNEQUAL_POWER_K2_SNR_DB = 20.0
-UNEQUAL_POWER_GAPS_DB = (0.0, 6.0, 12.0)
-UNEQUAL_MID_ANCHOR = (107.43, 30.29)
-UNEQUAL_MID_BEARING_DEG = 0.0
-UNEQUAL_DIAGONAL_HIGH_ANCHOR = (209.53, 50.27)
-UNEQUAL_DIAGONAL_HIGH_BEARING_DEG = 45.0
 
 
 def uca_positions(wavelength: float = 1.0, m: int = M) -> np.ndarray:
     """Horizontal UCA with adjacent chord length wavelength/2."""
-    if int(m) != M:
-        radius = float(wavelength) / (4.0 * np.sin(np.pi / int(m)))
-    else:
-        radius = RADIUS_OVER_WAVELENGTH * float(wavelength)
+    radius = float(wavelength) / (4.0 * np.sin(np.pi / int(m)))
     alpha = 2.0 * np.pi * np.arange(m) / m
     return np.column_stack((radius * np.cos(alpha), radius * np.sin(alpha), np.zeros(m)))
 
 
-def angle_grids():
-    """Bounds arrays accepted by the reference implementation."""
-    return np.array(THETA_RANGE), np.array(PHI_RANGE)
+def source_count_geometry(k: int, alpha_deg: float, beta: float) -> np.ndarray:
+    """Frozen K-source geometry used by the source-count protocol."""
+    idx = np.arange(int(k), dtype=float)
+    az = np.mod(float(alpha_deg) + idx * 360.0 / int(k), 360.0)
+    el = 20.0 + 50.0 * np.mod(float(beta) + idx * GOLDEN_FRACTION, 1.0)
+    D = np.column_stack((az, el))
+    return D[np.argsort(D[:, 0])]
+
+
+def resolution_pair(delta_deg: float) -> np.ndarray:
+    """Equal-elevation pair with exact great-circle separation delta_deg."""
+    th1, ph = RESOLUTION_ANCHOR
+    d = np.deg2rad(float(delta_deg))
+    p = np.deg2rad(ph)
+    c = (np.cos(d) - np.sin(p) ** 2) / max(np.cos(p) ** 2, np.finfo(float).eps)
+    c = np.clip(c, -1.0, 1.0)
+    dth = np.rad2deg(np.arccos(c))
+    return np.array([[th1, ph], [np.mod(th1 + dth, 360.0), ph]], dtype=float)
