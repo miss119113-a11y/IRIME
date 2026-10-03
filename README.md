@@ -1,98 +1,77 @@
-# IRIME: structure-guided RIME for 2D ML-DOA estimation
+# IRIME for two-dimensional ML-DOA estimation
 
-> **Private pre-release repository.** This repository is being prepared for the IRIME manuscript and will remain private during peer review. A cleaned public release is planned after publication.
+This private review repository contains the proposed estimator and the minimal principal experiment runners for manuscript revision **R122**. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
 
-This repository contains the reference implementation and paper-level protocol for **IRIME**, a structure-guided RIME framework for multi-source two-dimensional maximum-likelihood direction-of-arrival (2D ML-DOA) estimation.
-
-IRIME combines:
+The estimator is extracted from the implementation in **RIME(4).zip** used by the paper experiments. It retains the numerical path for:
 
 1. rank-stabilized recursive projected-subspace initialization;
-2. differential-subspace decoupling (DSD) for locally ill-conditioned close source pairs;
-3. finite-budget cyclic source-wise RIME search on a rank-stabilized DML-form objective; and
-4. observation-driven bounded terminal refinement for ordinary, weak/close, and high-occupancy states.
+2. differential-subspace decoupling (DSD);
+3. two cyclic conditional RIME searches; and
+4. observation-driven bounded joint terminal refinement.
 
-The source count is assumed known, consistent with the manuscript.
+The earlier short `irime.py` on `main` approximated this pipeline with different population updates, covariance fitting, and terminal settings. It has been replaced by the experiment implementation's dependency closure. Unrelated estimators, historical variants, environments, large results, and manuscript files are excluded from this minimal repository.
 
-## Repository status
+## Install and test
 
-The previous SPFRIME repository state has been preserved on branch:
-
-`archive/spfrime-20260915`
-
-The `main` branch is now reserved for the IRIME paper code. During peer review the repository remains private. Before public release we will add the final frozen Monte Carlo runners, result manifests, and a release tag tied to the accepted manuscript.
-
-## Environment
-
-Python 3.11 is recommended.
+Python 3.11 is the recorded paper environment. `requirements.txt` pins the recorded NumPy and SciPy versions. A standard-library test runner is sufficient:
 
 ```bash
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-# source .venv/bin/activate
+# Activate .venv using the command appropriate to your operating system.
 python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
 ```
 
-## Reference implementation
+`tests/frozen_fixtures.json` stores six point-estimate fixtures from the extracted experiment implementation. The tests also check the conditional projector identity, analytic degree derivatives, eigenvector-phase alignment, exact spherical spacing, and penalties for missing directions. Cross-platform floating-point tolerances are used for the fixtures.
 
-The core estimator is in `irime.py`.
+During extraction, 28 representative SNR, snapshot, source-count, resolution, and timing cells were checked against the full experiment package: observations and point estimates matched bitwise in the validation environment. This check verifies the extraction, not an independent rerun of every 500-trial paper comparison. `PROVENANCE.json` identifies each source module and its SHA-256.
+
+## Estimate DOAs
 
 ```python
+import numpy as np
 from irime import irime
 
 azimuth, elevation = irime(
-    X,
-    array_pos,
-    wavelength,
-    theta_grid,
-    phi_grid,
-    k_sources,
-    h=2.5,
-    B=896,
-    seed=0,
+    X, array_pos, wavelength,
+    np.arange(361), np.arange(91), known_source_count,
+    h=2.5, B=896, seed=0,
 )
 ```
 
-The implementation follows the manuscript pipeline and exposes diagnostics when `return_diagnostics=True`.
+`X` has shape `(M, L)` and `array_pos` has shape `(M, 3)`. Angles are in degrees. The grid arguments supply domain bounds; `h` controls the internal evidence grid and terminal neighborhood. The paper assumes known `K < M` and the upper hemisphere. Diagnostics are available through `return_diagnostics=True`.
 
-## Frozen paper-level configuration
+## Reproduce the proposed method's principal experiments
 
-`experiments/paper_protocol.py` collects the principal settings used by the manuscript:
-
-- 12-element horizontal UCA with adjacent chord length `lambda/2`;
-- azimuth domain `0-360 deg` and elevation domain `0-90 deg`;
-- shared angular scale `h = 2.5 deg`;
-- conditional RIME budget `B = 896`;
-- two cyclic conditional sweeps;
-- 500 paired Monte Carlo trials per formal cell unless explicitly stated otherwise;
-- exact great-circle two-source resolution protocol with the frozen noninteger anchor used in the paper;
-- source-count geometry generated from a trial-specific common azimuth rotation and a golden-ratio elevation sequence.
-
-## Tests
+Run from the repository root:
 
 ```bash
-python -m pytest -q
+# Quick execution check for every principal cell (not formal evidence).
+python -m experiments.run_main --family all --trials 1 --out results/smoke
+
+# Frozen 500-trial principal experiments for the proposed estimator.
+python -m experiments.run_main --family snr --trials 500 --out results/snr
+python -m experiments.run_main --family snapshots --trials 500 --out results/snapshots
+python -m experiments.run_main --family sources --trials 500 --out results/sources
+python -m experiments.run_main --family resolution --trials 500 --out results/resolution
+python -m experiments.run_main --family efficiency --trials 500 --out results/efficiency
+
+# One source-count cell, with the same frozen seeds.
+python -m experiments.run_main --family sources --condition K9 --trials 500 --out results/k9
 ```
 
-The tests check the UCA geometry, protocol constants, and a basic IRIME smoke case.
+Each output directory contains resumable `trials.csv`, aggregated `summary.csv`, and an environment/configuration `MANIFEST.json`. Observation generation is excluded from estimator timing. Numerical-library threads are set to one before importing NumPy. The formal trial offsets are preserved: 70000 for the SNR/snapshot families, 80000 for resolution, zero for source count, and 180001 for the timing seed sequence.
 
-## Reproducibility policy
+The SNR/snapshot/timing cells use deterministic complex tones and total clean array-output SNR. The source-count family uses independent Gaussian waveforms normalized to unit finite-sample power, regular azimuth geometry, and fixed per-source SNR. Resolution uses unnormalized independent Gaussian waveforms and per-source expected-power SNR. These conventions intentionally differ and are recorded in the protocol.
 
-The manuscript distinguishes two error families:
+This minimal runner reproduces **IRIME's own principal cells**. It does not regenerate the paper's six comparative baselines, sensitivity, mismatch, URA, or supplemental 2000-trial studies. Those full-study records remain part of the authors' experiment archive.
 
-- joint-angular coordinate RMSE for the main SNR, snapshot, source-count, and runtime comparisons;
-- spherical great-circle metrics for strict resolution, high-source-count failure tails, cross-geometry transfer, and robustness analyses.
+## Criteria and implementation limits
 
-Failed/incomplete estimates are retained through fixed failure penalties rather than silently discarded.
+The raw deterministic likelihood, stabilized DML-form search, nonnegative covariance-fit residual, and SML-form terminal score have distinct meanings. The covariance fitter uses monotone active removal and is an approximate nonnegative least-squares rule. The SML-form score does not enforce the positive-semidefinite source-covariance feasibility inequality. The terminal gates are operational heuristics. Non-worsening acceptance concerns each selected criterion, rather than one global raw likelihood.
 
-Objective-evaluation counts from heterogeneous estimators are not treated as equal-cost operations; same-machine wall-clock timing is used only as an implementation-level comparison.
+The frozen DSD implementation uses a local arithmetic angular midpoint and evaluates symmetric proposals before later boundary repair. It does not provide a seam-invariant or globally valid spherical coordinate chart. This convention is retained to preserve the reported estimator. A circular-midpoint or boundary-handling change would define a new numerical version and requires revalidation of affected cells.
 
-## Public release plan
+`B=896` controls one conditional call, not total estimator work. The historical aggregate evaluation diagnostic omitted several kinds of calls; the public wrapper therefore omits that total rather than reporting it as an exact count. Wall-clock measurements are specific to the stated implementation and machine.
 
-The repository is intentionally private during review. After publication we plan to:
-
-1. freeze an accepted-paper release tag;
-2. add the full paper experiment runners and result manifests;
-3. verify a clean environment reproduction;
-4. switch the repository to public access.
+The repository remains private during review. Public access is planned upon publication.

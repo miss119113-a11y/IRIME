@@ -1,0 +1,141 @@
+{
+  "source_archive": "RIME(4).zip",
+  "manuscript_revision": "R122",
+  "paper_defaults": {
+    "h": 2.5,
+    "B": 896
+  },
+  "changes": "Dependency extraction, documentation corrections and removal of an unreliable total-count diagnostic; no estimation operator changes.",
+  "symbols": [
+    {
+      "symbol": "ArchiveBuffer",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "clamp_positions",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "make_child_rng",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "random_population",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "make_initial_population",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "_joint_seed_population",
+      "source": "experiments/final_core_execution/alg/single_opt_common.py",
+      "source_sha256": "39c132f5b6c19cb8e145cf5015bf41e310b497abeb48eca1cf22c3fb73fd989e"
+    },
+    {
+      "symbol": "_select_best_population",
+      "source": "experiments/final_core_execution/alg/rime_music.py",
+      "source_sha256": "6ee656a0d9845c3d26a51dc0cb1a60f81f767d455d8f8098f4483f8bfcc34dc4"
+    },
+    {
+      "symbol": "_augment_initial_population",
+      "source": "experiments/final_core_execution/alg/rime_music.py",
+      "source_sha256": "6ee656a0d9845c3d26a51dc0cb1a60f81f767d455d8f8098f4483f8bfcc34dc4"
+    },
+    {
+      "symbol": "_adaptive_restart",
+      "source": "experiments/final_core_execution/alg/rime_music.py",
+      "source_sha256": "6ee656a0d9845c3d26a51dc0cb1a60f81f767d455d8f8098f4483f8bfcc34dc4"
+    },
+    {
+      "symbol": "_optimize_rime",
+      "source": "experiments/final_core_execution/alg/rime_music.py",
+      "source_sha256": "6ee656a0d9845c3d26a51dc0cb1a60f81f767d455d8f8098f4483f8bfcc34dc4"
+    },
+    {
+      "symbol": "_spiked_covariance_projection",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_nonnegative_normal_equations",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_uncorrelated_covariance_set_fit",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_high_occupancy_evidence_swap_repair",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_validate_bounds",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_grid_axis",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_steering",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_orthogonal_complement",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "ConditionalDMLObjective",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_rime_shape",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_joint_dml_polish",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_joint_uncorrelated_covariance_polish",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_joint_stochastic_ml_polish",
+      "source": "experiments/irime_v2_advanced/irime_v3_clean.py",
+      "source_sha256": "36de15c1121de708489c3d87160314f50e5240757fb09cd8f39971ef1faf6bc3"
+    },
+    {
+      "symbol": "_steering_derivatives",
+      "source": "experiments/irime_v2_advanced/irime_v7_compact.py",
+      "source_sha256": "56a403759b94c5ce1cb7fb249ff8a2ded772020a27908da8dd9ef2e26b0334c5"
+    },
+    {
+      "symbol": "_differential_subspace_decouple",
+      "source": "experiments/irime_v2_advanced/irime_v7_compact.py",
+      "source_sha256": "56a403759b94c5ce1cb7fb249ff8a2ded772020a27908da8dd9ef2e26b0334c5"
+    },
+    {
+      "symbol": "irime_v7_compact",
+      "source": "experiments/irime_v2_advanced/irime_v7_compact.py",
+      "source_sha256": "56a403759b94c5ce1cb7fb249ff8a2ded772020a27908da8dd9ef2e26b0334c5"
+    }
+  ]
+}

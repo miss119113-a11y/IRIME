@@ -1,0 +1,130 @@
+[
+  {
+    "family": "snr",
+    "condition": "-5",
+    "trial": 70000,
+    "method_seed": 825847762,
+    "theta": [
+      30.252570699858186,
+      120.88307611635062,
+      241.07245863455844
+    ],
+    "phi": [
+      61.612530445175715,
+      32.75165324936766,
+      45.84750344136047
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": -5,
+    "local_trial": 0
+  },
+  {
+    "family": "snapshots",
+    "condition": "300",
+    "trial": 70001,
+    "method_seed": 1262792826,
+    "theta": [
+      29.826176744450795,
+      120.33957581438933,
+      240.4754380131878
+    ],
+    "phi": [
+      60.04804913666599,
+      30.31887671451964,
+      45.73284353907494
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": 300,
+    "local_trial": 1
+  },
+  {
+    "family": "sources",
+    "condition": "3",
+    "trial": 0,
+    "method_seed": 2717248259,
+    "theta": [
+      37.94187177626244,
+      157.9604920427846,
+      277.8877304949323
+    ],
+    "phi": [
+      46.21727425699537,
+      34.309144997355574,
+      65.26231680757046
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": 3,
+    "local_trial": 0
+  },
+  {
+    "family": "sources",
+    "condition": "9",
+    "trial": 0,
+    "method_seed": 1273765861,
+    "theta": [
+      16.339365078133444,
+      56.37487641573332,
+      96.41507223704423,
+      136.37826368777294,
+      176.42143279006382,
+      216.98216603038748,
+      256.5831205690546,
+      296.43034901442536,
+      336.3310994229001
+    ],
+    "phi": [
+      40.769657910970125,
+      21.59171667743044,
+      52.416090204875246,
+      55.54986408626825,
+      36.517178758529354,
+      67.59204558693004,
+      48.259821261077526,
+      29.133137672471033,
+      60.04456269269776
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": 9,
+    "local_trial": 0
+  },
+  {
+    "family": "resolution",
+    "condition": "(1.5, 10)",
+    "trial": 80002,
+    "method_seed": 2663563067,
+    "theta": [
+      84.02745266817483,
+      85.20033493958695
+    ],
+    "phi": [
+      35.33635311987151,
+      35.42029156800593
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": [
+      1.5,
+      10
+    ],
+    "local_trial": 2
+  },
+  {
+    "family": "resolution",
+    "condition": "(1, 20)",
+    "trial": 80002,
+    "method_seed": 1875888392,
+    "theta": [
+      83.13685043875904,
+      84.60289178381498
+    ],
+    "phi": [
+      35.28004261629722,
+      35.29679596273704
+    ],
+    "status": "bitwise_observation_and_estimate_match",
+    "value": [
+      1,
+      20
+    ],
+    "local_trial": 2
+  }
+]
