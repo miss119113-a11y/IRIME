@@ -68,7 +68,12 @@ This minimal runner reproduces **IRIME's own principal cells**. It does not rege
 
 ## Original RIME-ML ablation reference
 
+For the R123 local numerical environment, use Python 3.12.14 in a separate
+virtual environment and install `requirements-ablation.txt`. The original
+`requirements.txt` continues to record the paper's main experiment environment.
+
 ```bash
+python -m pip install -r requirements-ablation.txt
 # Five frozen conditions; each observation is shared by both estimators.
 python -m experiments.run_rime_ablation --trials 500 --workers 1 --out results/rime_ablation
 python -m experiments.summarize_rime_ablation results/rime_ablation

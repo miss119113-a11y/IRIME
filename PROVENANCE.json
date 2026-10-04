@@ -160,13 +160,15 @@
     "scipy": "1.17.0",
     "operating_system": "Linux",
     "workers": 8,
-    "purpose": "Paired accuracy experiment only; contended wall times are not serial timing evidence"
+    "purpose": "Paired accuracy experiment only; contended wall times are not serial timing evidence",
+    "requirements_file": "requirements-ablation.txt"
   },
   "r123_added_files_sha256": {
     "experiments/rime_ml.py": "1b008c0340c5186e61c921de953ed85c28b52c3f263bda414ff583407de8137f",
     "experiments/run_rime_ablation.py": "57f4aebe021a8c48d252048ca1db5d1a8f190224b790b49a3f1bf5ff6278f34e",
     "experiments/summarize_rime_ablation.py": "fe5244ea23b96b80a278549abc23cfb5b6b6bc7c89e2c7a7d7456310f97c73d5",
     "tests/test_rime_ml.py": "a3417e8a448d7f55605c534b64d894e6624c733d3d95a2072055082786e83061",
-    "THIRD_PARTY_NOTICES.md": "a95ce1a76066287e275e8fe676d85dbf152a549a363c1fa9a6bceb34279e209c"
+    "THIRD_PARTY_NOTICES.md": "a95ce1a76066287e275e8fe676d85dbf152a549a363c1fa9a6bceb34279e209c",
+    "requirements-ablation.txt": "1668a3152e33680d94637b13421c15e68bd97cd8701f7f555c691f5bc5c0b9f3"
   }
 }
