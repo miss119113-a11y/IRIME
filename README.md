@@ -1,6 +1,6 @@
 # IRIME for two-dimensional ML-DOA estimation
 
-This private review repository contains the proposed estimator and the minimal principal experiment runners for manuscript revision **R122**. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
+This private review repository contains the proposed estimator and the minimal principal experiment runners for manuscript revision **R123**. It also includes the specifically requested original RIME-ML ablation reference. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
 
 The estimator is extracted from the implementation in **RIME(4).zip** used by the paper experiments. It retains the numerical path for:
 
@@ -65,6 +65,47 @@ Each output directory contains resumable `trials.csv`, aggregated `summary.csv`,
 The SNR/snapshot/timing cells use deterministic complex tones and total clean array-output SNR. The source-count family uses independent Gaussian waveforms normalized to unit finite-sample power, regular azimuth geometry, and fixed per-source SNR. Resolution uses unnormalized independent Gaussian waveforms and per-source expected-power SNR. These conventions intentionally differ and are recorded in the protocol.
 
 This minimal runner reproduces **IRIME's own principal cells**. It does not regenerate the paper's six comparative baselines, sensitivity, mismatch, URA, or supplemental 2000-trial studies. Those full-study records remain part of the authors' experiment archive.
+
+## Original RIME-ML ablation reference
+
+```bash
+# Five frozen conditions; each observation is shared by both estimators.
+python -m experiments.run_rime_ablation --trials 500 --workers 1 --out results/rime_ablation
+python -m experiments.summarize_rime_ablation results/rime_ablation
+```
+
+The reference searches all `2*K` angles directly with the original 2023
+soft-rime, hard-rime and positive-greedy operators. It uses uniform random
+initialization, box absorption, `W=5`, population 50, and 2000 generations:
+exactly 100,050 raw joint-DML objective evaluations including initialization.
+No recursive initializer, DSD, local polish, sorting during optimization, or
+IRIME terminal controller is included. A rank-aware SVD evaluates the raw
+projection residual, including duplicate-source candidates. The numerical
+rank cutoff is `1e-10` relative to the largest singular value.
+
+The port follows the official MATLAB equations, including MATLAB's rounding
+rule and L2 row normalization of the fitness vector. NumPy batches independent
+uniform draws, so MATLAB and NumPy random-seed paths are not identical. See
+`THIRD_PARTY_NOTICES.md` for the source credit and MIT notice. Four added tests
+check the raw projection against a pseudoinverse, permutation/azimuth
+invariance, the official scalar update equations, and reproducible evaluation
+counts with greedy acceptance. Together with the six original contracts, the
+repository has ten tests.
+
+The five cells are -5 dB with K=3, 10 dB with spherical spacing 1.5 degrees,
+20 dB with spacing 1 degree, K=8 and K=9. Both methods retain the frozen main
+observation generators and matching rules. All per-trial estimates, seeds,
+observation hashes, failures and exact reference evaluation counts are saved.
+The summarizer checks every observation pair and resamples complete pairs for
+95% confidence intervals. Intervals are per condition without multiplicity
+correction. This is a whole-framework reference; it does not isolate the value
+of IRIME's conditional RIME kernel or equalize total estimator cost.
+
+The R123 local paired run uses Linux, Python 3.12.14, NumPy 2.3.5 and SciPy
+1.17.0. It is reported separately from the historical module-ablation table.
+Set `--workers` above one only to accelerate accuracy experiments. Those
+contended wall times cannot be used as a serial runtime comparison or mixed
+with the paper's recorded Windows timing results.
 
 ## Criteria and implementation limits
 

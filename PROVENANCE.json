@@ -137,5 +137,36 @@
       "source": "experiments/irime_v2_advanced/irime_v7_compact.py",
       "source_sha256": "56a403759b94c5ce1cb7fb249ff8a2ded772020a27908da8dd9ef2e26b0334c5"
     }
-  ]
+  ],
+  "revision": "R123",
+  "rime_ml_reference": {
+    "name": "Original RIME on raw joint DML",
+    "official_source": "https://github.com/aliasgharheidaricom/RIME-A-physics-based-optimization/blob/32b02339873ae24e10358f3ccedf9fcaebeae2cb/RIME.m",
+    "official_commit": "32b02339873ae24e10358f3ccedf9fcaebeae2cb",
+    "license": "MIT, Copyright (c) 2023 Ali Asghar Heidari",
+    "population": 50,
+    "generations": 2000,
+    "W": 5,
+    "joint_objective_evaluations": 100050,
+    "rank_rcond": 1e-10,
+    "initialization": "Independent uniform over full azimuth/elevation box",
+    "operators": "Original soft-rime, hard-rime (L2 fitness normalization), box absorption, positive greedy selection",
+    "randomness": "Batched NumPy independent uniforms; not MATLAB RNG sequence equivalence",
+    "scope": "Whole-framework reference, not conditional-kernel isolation or total-cost matching"
+  },
+  "r123_local_environment": {
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "operating_system": "Linux",
+    "workers": 8,
+    "purpose": "Paired accuracy experiment only; contended wall times are not serial timing evidence"
+  },
+  "r123_added_files_sha256": {
+    "experiments/rime_ml.py": "1b008c0340c5186e61c921de953ed85c28b52c3f263bda414ff583407de8137f",
+    "experiments/run_rime_ablation.py": "57f4aebe021a8c48d252048ca1db5d1a8f190224b790b49a3f1bf5ff6278f34e",
+    "experiments/summarize_rime_ablation.py": "fe5244ea23b96b80a278549abc23cfb5b6b6bc7c89e2c7a7d7456310f97c73d5",
+    "tests/test_rime_ml.py": "a3417e8a448d7f55605c534b64d894e6624c733d3d95a2072055082786e83061",
+    "THIRD_PARTY_NOTICES.md": "a95ce1a76066287e275e8fe676d85dbf152a549a363c1fa9a6bceb34279e209c"
+  }
 }
