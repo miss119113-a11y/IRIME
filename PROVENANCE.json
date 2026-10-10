@@ -170,5 +170,20 @@
     "tests/test_rime_ml.py": "a3417e8a448d7f55605c534b64d894e6624c733d3d95a2072055082786e83061",
     "THIRD_PARTY_NOTICES.md": "a95ce1a76066287e275e8fe676d85dbf152a549a363c1fa9a6bceb34279e209c",
     "requirements-ablation.txt": "1668a3152e33680d94637b13421c15e68bd97cd8701f7f555c691f5bc5c0b9f3"
+  },
+  "post_extraction_boundary_fix": {
+    "revision": "R205",
+    "date": "2026-10-10",
+    "origin": "IRIME_R205_DSD角度边界修复_独立验证覆盖包.zip",
+    "source_overlay_sha256": "ee2da857d6a44201cbf12693afd600bf4ef0eabf9d0d68789ee326695bc123b7",
+    "modified_function": "_differential_subspace_decouple in irime.py",
+    "changes": [
+      "short-arc azimuth centroid",
+      "centroid elevation-range guard and periodic theta normalization",
+      "periodic wrapping and elevation bound rejection in symmetric DSD line search"
+    ],
+    "validation": "Targeted four-geometry numerical smoke checks, 15 seeds each, with finite in-domain output and non-worsening stabilized criterion; additional independent periodic alias check.",
+    "scientific_scope": "Paper R205 reported experiments predate this patch. No full rerun or reattribution of R205 figures, tables, comparisons, or timing results has been performed.",
+    "original_provenance_note": "The existing source_archive and symbols.source_sha256 keys describe the pre-boundary-fix dependency extraction, not the patched file."
   }
 }

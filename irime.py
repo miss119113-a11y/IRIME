@@ -1,7 +1,9 @@
 """IRIME estimator extracted from the RIME(4).zip experiment implementation.
 
-All estimation operators are retained from the frozen Compact IRIME path.
-The public wrapper fixes the paper defaults h=2.5 and B=896. Nonnegative
+The main estimator follows the recorded Compact IRIME path, with the R205
+DSD angular-seam and elevation-domain correction applied separately. The
+R205 paper tables predate this correction; do not claim they were rerun with
+this revised implementation. The public wrapper fixes h=2.5 and B=896. Nonnegative
 covariance fitting uses monotone active removal (an approximation), and the
 high-occupancy terminal criterion is SML-form, not an unconditional likelihood
 identity. See README.md for the local DSD chart and reproducibility limits.
@@ -1000,11 +1002,19 @@ def _differential_subspace_decouple(
     curr_loss = 1.0 - float(np.real(np.trace(P_curr @ covariance))) / max(cov_tr, EPS)
 
     # 2. Centroid alignment with primary eigenvector v1 (MLE centroid matched filter)
+    # Choose the midpoint on the shorter periodic azimuth arc, not the
+    # arithmetic midpoint of angles straddling 0/360 degrees.
     p_mid = 0.5 * (estimates[i] + estimates[j])
+    theta_diff = (estimates[j, 0] - estimates[i, 0] + 0.5 * theta_span) % theta_span - 0.5 * theta_span
+    p_mid[0] = estimates[i, 0] + 0.5 * theta_diff
     p_mid[0] = (p_mid[0] - theta_bounds[0]) % theta_span + theta_bounds[0]
     p_mid[1] = np.clip(p_mid[1], *phi_bounds)
 
     def cent_obj(pt: np.ndarray) -> float:
+        if not np.all(np.isfinite(pt)) or not (phi_bounds[0] <= pt[1] <= phi_bounds[1]):
+            return 1e10
+        pt = pt.copy()
+        pt[0] = (pt[0] - theta_bounds[0]) % theta_span + theta_bounds[0]
         a = _steering(pt[None, :], array_pos, wavelength)[:, 0]
         Qa = Q @ a
         den = float(np.real(np.vdot(Qa, Qa)))
@@ -1047,19 +1057,29 @@ def _differential_subspace_decouple(
     rayleigh_half_bw_deg = float(np.rad2deg(wavelength / (2.0 * d_max)))
     max_search_s = min(2.5, rayleigh_half_bw_deg / 4.0)
 
-    def dml_1d(s: float) -> float:
+    def candidate_at(s: float) -> np.ndarray | None:
         cand = estimates.copy()
         cand[i] = cent - s * u
         cand[j] = cent + s * u
+        pair = cand[[i, j], :]
+        if not np.all(np.isfinite(pair)) or np.any(pair[:, 1] < phi_bounds[0]) or np.any(pair[:, 1] > phi_bounds[1]):
+            return None
+        cand[[i, j], 0] = (cand[[i, j], 0] - theta_bounds[0]) % theta_span + theta_bounds[0]
+        return cand
+
+    def dml_1d(s: float) -> float:
+        cand = candidate_at(s)
+        if cand is None:
+            return 1e10
         A_c = _steering(cand, array_pos, wavelength)
         P_c = A_c @ np.linalg.pinv(A_c)
         return 1.0 - float(np.real(np.trace(P_c @ covariance))) / max(cov_tr, EPS)
 
     res_line = opt.minimize_scalar(dml_1d, bounds=(0.05, max_search_s), method="bounded", options={"xatol": 0.02, "maxiter": 15})
     if res_line.fun < curr_loss - 64.0 * EPS:
-        cand = estimates.copy()
-        cand[i] = cent - res_line.x * u
-        cand[j] = cent + res_line.x * u
+        cand = candidate_at(res_line.x)
+        if cand is None:
+            return estimates, {"applied": False, "reason": "candidate_out_of_bounds"}
         return cand, {
             "applied": True,
             "closest_pair": closest_pair,
@@ -1286,7 +1306,7 @@ def _irime_frozen(
 
 def irime(X, array_pos, wavelength, theta_grid, phi_grid, k_sources, *,
           h=2.5, B=896, seed=42, return_diagnostics=False):
-    """Estimate K known DOAs in degrees using the frozen paper implementation.
+    """Estimate K known DOAs in degrees using the recorded paper method plus R205 DSD boundary correction.
 
     ``theta_grid`` and ``phi_grid`` specify domain endpoints, not the internal
     initialization resolution; that is controlled by ``h``. Diagnostics do not

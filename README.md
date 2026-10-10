@@ -1,6 +1,6 @@
 # IRIME for two-dimensional ML-DOA estimation
 
-This private review repository contains the proposed estimator and the minimal principal experiment runners for manuscript revision **R123**. It also includes the specifically requested original RIME-ML ablation reference. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
+This private review repository contains the proposed estimator and the minimal principal experiment runners, originally extracted for manuscript **R123**, with the **R205 DSD boundary correction** subsequently applied. It also includes the specifically requested original RIME-ML ablation reference. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
 
 The estimator is extracted from the implementation in **RIME(4).zip** used by the paper experiments. It retains the numerical path for:
 
@@ -22,7 +22,7 @@ python -m pip install -r requirements.txt
 python -m unittest discover -s tests -v
 ```
 
-`tests/frozen_fixtures.json` stores six point-estimate fixtures from the extracted experiment implementation. The tests also check the conditional projector identity, analytic degree derivatives, eigenvector-phase alignment, exact spherical spacing, and penalties for missing directions. Cross-platform floating-point tolerances are used for the fixtures.
+`tests/frozen_fixtures.json` stores six point-estimate fixtures from the extracted experiment implementation. The tests also check the conditional projector identity, analytic degree derivatives, eigenvector-phase alignment, exact spherical spacing, and penalties for missing directions. Additional DSD regression tests cover azimuth-seam alias invariance, both elevation boundaries, output domains, and non-worsening stabilized loss. Cross-platform floating-point tolerances are used for the fixtures.
 
 During extraction, 28 representative SNR, snapshot, source-count, resolution, and timing cells were checked against the full experiment package: observations and point estimates matched bitwise in the validation environment. This check verifies the extraction, not an independent rerun of every 500-trial paper comparison. `PROVENANCE.json` identifies each source module and its SHA-256.
 
@@ -116,7 +116,9 @@ with the paper's recorded Windows timing results.
 
 The raw deterministic likelihood, stabilized DML-form search, nonnegative covariance-fit residual, and SML-form terminal score have distinct meanings. The covariance fitter uses monotone active removal and is an approximate nonnegative least-squares rule. The SML-form score does not enforce the positive-semidefinite source-covariance feasibility inequality. The terminal gates are operational heuristics. Non-worsening acceptance concerns each selected criterion, rather than one global raw likelihood.
 
-The frozen DSD implementation uses a local arithmetic angular midpoint and evaluates symmetric proposals before later boundary repair. It does not provide a seam-invariant or globally valid spherical coordinate chart. This convention is retained to preserve the reported estimator. A circular-midpoint or boundary-handling change would define a new numerical version and requires revalidation of affected cells.
+**R205 DSD boundary correction (post-paper-results numerical version):** The centroid starts from the midpoint of the shortest periodic azimuth arc. The centroid optimizer wraps azimuth but rejects elevation-out-of-range proposals. The symmetric-pair line search wraps azimuth and rejects invalid elevations before evaluating the stabilized DML-form loss. A candidate is accepted only if the tested loss decreases. This addresses the coordinate-seam and elevation-range defects in the local DSD proposal; it does not establish a globally valid spherical parameterization or guarantee improved true-angle error.
+
+The R205 published-in-draft tables/figures were generated with the preceding experimental implementation, **not** the patched DSD. Existing six recorded estimate fixtures and earlier 28-cell extraction checks document the preceding implementation and are not a full statistical validation of the patched version. For scientific reproducibility, re-evaluate all materially affected cells, regenerate corresponding tables/plots as needed, and record the new implementation SHA before attributing those results to the patched code. The repository remains private during review.
 
 `B=896` controls one conditional call, not total estimator work. The historical aggregate evaluation diagnostic omitted several kinds of calls; the public wrapper therefore omits that total rather than reporting it as an exact count. Wall-clock measurements are specific to the stated implementation and machine.
 
