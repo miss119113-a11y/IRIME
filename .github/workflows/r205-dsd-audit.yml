@@ -23,7 +23,7 @@ jobs:
         continue-on-error: true
         run: python -m unittest discover -s tests -v
       - name: Paired R205 DSD impact audit
-        run: python tests/r205_paired_audit.py --trials 5 --out audit/r205_dsd
+        run: PYTHONPATH=. python tests/r205_paired_audit.py --trials 5 --out audit/r205_dsd
       - uses: actions/upload-artifact@v4
         if: always()
         with:
