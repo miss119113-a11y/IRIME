@@ -1,8 +1,8 @@
 """IRIME estimator extracted from the RIME(4).zip experiment implementation.
 
-The main estimator follows the recorded Compact IRIME path, with the R205
-DSD angular-seam and elevation-domain correction applied separately. The
-R205 paper tables predate this correction; do not claim they were rerun with
+The estimator follows the Compact IRIME numerical pipeline with the R205
+DSC (formerly DSD) angular-seam and elevation-domain correction. The
+Some historical paper tables predate this correction; do not claim they were rerun with
 this revised implementation. The public wrapper fixes h=2.5 and B=896. Nonnegative
 covariance fitting uses monotone active removal (an approximation), and the
 high-occupancy terminal criterion is SML-form, not an unconditional likelihood
