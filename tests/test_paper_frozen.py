@@ -16,10 +16,10 @@ from experiments import paper_protocol as P
 
 
 class PaperFrozenRegression(unittest.TestCase):
-    def test_frozen_implementation_sha256(self):
+    def test_frozen_implementation_git_blob(self):
         code = Path(__file__).resolve().parents[1] / "paper_frozen" / "irime.py"
         # Exact source bytes are immutable for this historical manuscript version.
-        self.assertEqual(hashlib.sha1(b"blob " + str(len(code.read_bytes())).encode() + b"\\0" + code.read_bytes()).hexdigest(), "47653c5ec71a3c94afdb1fa0240e9565997aefee")
+        self.assertEqual(hashlib.sha1(b"blob " + str(len(code.read_bytes())).encode() + bytes([0]) + code.read_bytes()).hexdigest(), "47653c5ec71a3c94afdb1fa0240e9565997aefee")
 
     def test_recorded_estimator_fixtures(self):
         fixtures = json.loads((Path(__file__).parent / "frozen_fixtures.json").read_text())
