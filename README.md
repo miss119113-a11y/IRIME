@@ -13,6 +13,27 @@ The estimator is extracted from the implementation in **RIME(4).zip** used by th
 
 The earlier short `irime.py` on `main` approximated this pipeline with different population updates, covariance fitting, and terminal settings. It has been replaced by the experiment implementation's dependency closure. Unrelated estimators, historical variants, environments, large results, and manuscript files are excluded from this minimal repository.
 
+## Reproduction versions (manuscript and R205)
+
+The historical manuscript implementation is saved without numerical edits as
+[`paper_frozen/irime.py`](paper_frozen/irime.py) (Git blob `47653c5ec71a3c94afdb1fa0240e9565997aefee`,
+pre-R205 commit `93b2049831c0`). The repository-root `irime.py` is the
+subsequent R205 azimuth/elevation boundary-corrected version. The paper uses the
+name **DSC** (earlier code called this DSD); the naming change is not an algorithmic
+modification. [Frozen-version instructions](paper_frozen/README.md) and
+[`test_paper_frozen.py`](tests/test_paper_frozen.py) protect the historical source
+and point-estimate fixtures. Neither version is silently substituted for the other.
+
+```bash
+python -m unittest discover -s tests -p 'test_paper_frozen.py' -v
+python -m experiments.run_main --estimator-version paper-frozen --family sources --condition K9 --trials 1 --out results/paper_k9_smoke
+python -m experiments.run_main --estimator-version revised --family sources --condition K9 --trials 1 --out results/r205_k9_smoke
+```
+
+Both outputs carry `estimator_version` and code hashes in `MANIFEST.json`.
+The reproducibility tests check representative fixtures; complete statistical
+reproduction of all paper comparison algorithms remains outside this minimal repository.
+
 ## Install and test
 
 Python 3.11 is the recorded paper environment. `requirements.txt` pins the recorded NumPy and SciPy versions. A standard-library test runner is sufficient:
@@ -51,7 +72,7 @@ Run from the repository root:
 # Quick execution check for every principal cell (not formal evidence).
 python -m experiments.run_main --family all --trials 1 --out results/smoke
 
-# Frozen 500-trial principal experiments for the proposed estimator.
+# Frozen principal experiments: append --estimator-version paper-frozen to each command.
 python -m experiments.run_main --family snr --trials 500 --out results/snr
 python -m experiments.run_main --family snapshots --trials 500 --out results/snapshots
 python -m experiments.run_main --family sources --trials 500 --out results/sources
