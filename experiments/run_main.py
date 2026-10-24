@@ -8,7 +8,11 @@ from collections import defaultdict
 from pathlib import Path
 import numpy as np
 import scipy
-from irime import irime
+from irime import irime as revised_irime
+from paper_frozen.irime import irime as frozen_irime
+
+# Selected at command-line entry point. Defaults to current historical behavior.
+irime = revised_irime
 from experiments import paper_protocol as P
 
 FIELDS=("family","condition","local_trial","trial","method_seed","observation_digest","K","L","snr_db","status","failure_message","theta_true_json","phi_true_json","theta_est_json","phi_est_json","joint_rmse_deg","spherical_rmse_deg","sr3","strict_resolution","runtime_ms","crb_joint_deg")
@@ -71,12 +75,24 @@ def main():
     parser.add_argument('--trials',type=int,default=500)
     parser.add_argument('--trial-start',type=int,default=0,help='Local offset within the frozen trial sequence.')
     parser.add_argument('--out',type=Path,default=Path('results/main'))
+    parser.add_argument('--estimator-version',choices=('revised','paper-frozen'),default='revised',
+                        help='Select R205 boundary-corrected version or exact pre-R205 paper estimator.')
     parser.add_argument('--condition',help='Run one exact printed condition label, e.g. K9 or 10dB_Delta1.5.')
     args=parser.parse_args()
+    global irime
+    irime = frozen_irime if args.estimator_version == 'paper-frozen' else revised_irime
+    source_path = Path('paper_frozen/irime.py' if args.estimator_version == 'paper-frozen' else 'irime.py')
     if args.trials<1 or args.trial_start<0:parser.error('Require trials >= 1 and trial-start >= 0.')
     args.out.mkdir(parents=True,exist_ok=True)
     checkpoint=args.out/'trials.csv'
     rows=[]
+    existing_manifest = args.out/'MANIFEST.json'
+    if existing_manifest.exists():
+        previous = json.loads(existing_manifest.read_text(encoding='utf-8'))
+        if previous.get('estimator_version','revised') != args.estimator_version:
+            parser.error('Cannot resume an output folder produced by a different estimator version.')
+    elif checkpoint.exists():
+        parser.error('Found a prior trials.csv without version metadata; choose a fresh --out folder.')
     if checkpoint.exists():
         with checkpoint.open(newline='',encoding='utf-8') as f:rows=list(csv.DictReader(f))
     keys={(r['family'],r['condition'],int(r['local_trial'])) for r in rows}
@@ -97,7 +113,7 @@ def main():
             print(f'{family}/{condition}: {args.trials} requested trials complete',flush=True)
     if not matched:parser.error('No cell matches --condition.')
     summary=summarize(rows);write_rows(args.out/'summary.csv',summary,list(summary[0]))
-    manifest={'method':'IRIME','implementation_sha256':hashlib.sha256(Path('irime.py').read_bytes()).hexdigest(),'h':P.H,'B':P.B,'families':families,'requested_trials_per_cell':args.trials,'local_trial_start':args.trial_start,'python':sys.version,'numpy':np.__version__,'scipy':scipy.__version__,'platform':platform.platform(),'thread_env':{k:os.environ[k] for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS')},'timing_excludes_observation_generation':True,'scope':'Proposed estimator only. This minimal runner does not regenerate the six comparative baselines.'}
+    manifest={'method':'IRIME','estimator_version':args.estimator_version,'implementation_path':str(source_path),'implementation_sha256':hashlib.sha256(source_path.read_bytes()).hexdigest(),'h':P.H,'B':P.B,'families':families,'requested_trials_per_cell':args.trials,'local_trial_start':args.trial_start,'python':sys.version,'numpy':np.__version__,'scipy':scipy.__version__,'platform':platform.platform(),'thread_env':{k:os.environ[k] for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS','NUMEXPR_NUM_THREADS')},'timing_excludes_observation_generation':True,'scope':'Proposed estimator only. This minimal runner does not regenerate the six comparative baselines.'}
     (args.out/'MANIFEST.json').write_text(json.dumps(manifest,indent=2))
 
 if __name__=='__main__':main()
