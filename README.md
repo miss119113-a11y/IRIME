@@ -1,5 +1,7 @@
 # IRIME for two-dimensional ML-DOA estimation
 
+> **2026-10-24 CPU5 evidence update.** The latest verified results are in [experiments/results/CPU5_PROTOCOL_20261024.md](experiments/results/CPU5_PROTOCOL_20261024.md), with separate [main serial CPU](experiments/results/MAIN_SERIAL_CPU_20261024.csv) and [single-scene CPU5](experiments/results/SINGLE_SCENE_CPU5_20261024.csv) tables. The latter uses 100 observations for RMSE and five matched recorded CPU executions per configuration. Both cohorts are CPU-only/serial but use different grid-geometry policies; their nominal 1-degree times are not interchangeable. The experiment bundle records zero new estimator calls and preserves the original trial evidence externally. The current manuscript calls the pair-candidate correction **DSC**; historical code and provenance retain the old **DSD** name. `irime.py` preserves the R205 numerical seam/boundary correction; this documentation change does not modify its estimator operators.
+
 This private review repository contains the proposed estimator and the minimal principal experiment runners, originally extracted for manuscript **R123**, with the **R205 DSD boundary correction** subsequently applied. It also includes the specifically requested original RIME-ML ablation reference. The earlier SPFRIME state remains in Git history and on `archive/spfrime-20260915`.
 
 The estimator is extracted from the implementation in **RIME(4).zip** used by the paper experiments. It retains the numerical path for:
