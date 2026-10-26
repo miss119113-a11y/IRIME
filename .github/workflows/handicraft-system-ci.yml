@@ -1,0 +1,90 @@
+name: Handicraft System CI
+
+on:
+  push:
+    branches: [ handicraft-system-v1 ]
+    paths:
+      - 'handicraft-system/**'
+      - '.github/workflows/handicraft-system-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'handicraft-system/**'
+      - '.github/workflows/handicraft-system-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build Spring Boot backend
+        run: mvn -q -f handicraft-system/backend/pom.xml clean package
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and build Vue frontend
+        working-directory: handicraft-system/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Install browser for screenshots
+        working-directory: handicraft-system/frontend
+        run: |
+          npm install --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium
+
+      - name: Start backend and frontend
+        run: |
+          nohup java -jar handicraft-system/backend/target/handicraft-system-0.0.1-SNAPSHOT.jar > /tmp/craft-backend.log 2>&1 &
+          cd handicraft-system/frontend
+          nohup npm run dev -- --host 0.0.0.0 > /tmp/craft-frontend.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:8080/api/works/featured >/dev/null && curl -fsS http://127.0.0.1:5173 >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/craft-backend.log || true
+          cat /tmp/craft-frontend.log || true
+          exit 1
+
+      - name: API smoke test
+        run: |
+          curl -fsS http://127.0.0.1:8080/api/works/featured
+          curl -fsS -H 'Content-Type: application/json' -d '{"username":"user","password":"123456"}' http://127.0.0.1:8080/api/auth/login
+          curl -fsS http://127.0.0.1:8080/api/dashboard
+
+      - name: Capture system screenshots
+        working-directory: handicraft-system/frontend
+        run: node scripts/screenshot.mjs
+
+      - name: Upload preview screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-system-preview
+          path: handicraft-system/frontend/screenshots/*.png
+          retention-days: 7
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: handicraft-system-logs
+          path: |
+            /tmp/craft-backend.log
+            /tmp/craft-frontend.log
+          retention-days: 7

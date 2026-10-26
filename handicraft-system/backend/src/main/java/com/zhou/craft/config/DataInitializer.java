@@ -1,0 +1,36 @@
+package com.zhou.craft.config;
+
+import com.zhou.craft.model.*;
+import com.zhou.craft.repo.*;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import java.time.LocalDate;
+
+@Configuration
+public class DataInitializer {
+    @Bean
+    CommandLineRunner init(UserRepository users,CraftWorkRepository works,CustomRequestRepository requests,QuoteRepository quotes,CraftOrderRepository orders){
+        return args->{
+            users.save(new UserAccount("user","123456","周欣悦","USER","https://api.dicebear.com/9.x/notionists/svg?seed=zhou"));
+            users.save(new UserAccount("creator","123456","木屿手作","CREATOR","https://api.dicebear.com/9.x/notionists/svg?seed=craft"));
+            users.save(new UserAccount("admin","123456","系统管理员","ADMIN","https://api.dicebear.com/9.x/notionists/svg?seed=admin"));
+
+            works.save(new CraftWork("山雾陶杯","陶艺",168,7,"云岫陶坊","手拉坯高温烧制，保留手作纹理，可定制刻字与釉色。","https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1200&q=80",286,true));
+            works.save(new CraftWork("植物染手提包","织染",239,10,"青染工作室","天然植物染色与手工缝制，可根据色系、尺寸和图案定制。","https://images.unsplash.com/photo-1594223274512-ad4803739b7c?auto=format&fit=crop&w=1200&q=80",198,true));
+            works.save(new CraftWork("胡桃木戒指盒","木作",329,12,"木屿手作","黑胡桃木手工打磨，支持刻字、内衬颜色和尺寸定制。","https://images.unsplash.com/photo-1590739225287-bd31519780c3?auto=format&fit=crop&w=1200&q=80",336,true));
+            works.save(new CraftWork("银杏刺绣胸针","刺绣",96,5,"一针一线","以银杏叶为灵感，手工盘线刺绣，可选配色与名字缩写。","https://images.unsplash.com/photo-1617038220319-276d3cfab638?auto=format&fit=crop&w=1200&q=80",154,false));
+            works.save(new CraftWork("手工牛皮笔记本","皮艺",199,8,"慢皮记","植鞣牛皮手工裁切缝制，可定制封面压印与内页规格。","https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",177,false));
+            works.save(new CraftWork("青花茶席套装","陶艺",498,18,"云岫陶坊","茶壶、品茗杯和茶则组合，支持器型、纹样及题字定制。","https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1200&q=80",412,true));
+
+            var r1=requests.save(new CustomRequest("周欣悦","毕业礼物木质首饰盒","木作",280,450,"希望制作一个可放项链、耳饰和戒指的胡桃木首饰盒，外盖刻名字缩写 ZXY。","胡桃木", LocalDate.now().plusDays(22)));
+            var q1=quotes.save(new Quote(r1.getId(),"木屿手作",368,12,"建议胡桃木主体+米色绒布内衬，激光浅刻名字缩写，含一次设计确认。"));
+            r1.setStatus("已转订单");requests.save(r1);
+            var o1=new CraftOrder(r1.getId(),q1.getId(),r1.getTitle(),r1.getUserName(),q1.getCreatorName(),q1.getPrice(),q1.getLeadDays());
+            o1.updateProgress(55,"木盒主体已完成，正在制作分隔与内衬");
+            orders.save(o1);
+
+            requests.save(new CustomRequest("周欣悦","暖色系陶瓷咖啡杯","陶艺",120,220,"喜欢暖棕、米白色，杯身希望有不规则手作纹理，容量约350ml。","陶土", LocalDate.now().plusDays(15)));
+        };
+    }
+}
