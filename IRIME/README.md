@@ -17,10 +17,11 @@ python experiments/run_irime_paper.py --scenario sources --trials 500
 python experiments/run_irime_paper.py --scenario resolution --trials 500
 python experiments/run_irime_paper.py --scenario ablation --trials 500
 python experiments/run_irime_paper.py --scenario sensitivity --trials 500
-python experiments/run_irime_paper.py --scenario timing --trials 10
+python experiments/summarize_irime_paper.py results/resolution_irime_only.csv
+python experiments/summarize_irime_paper.py results/ablation_irime_only.csv
 ```
 
-By default, CSV outputs go into `results/`. Seeds and simulation conditions are recorded. The single-algorithm scripts provide a reproducible implementation of the stated experimental conditions; published comparison curves were generated separately and those external algorithm implementations are not part of this release. Runtime measurements will depend on local CPU and library versions.
+By default, CSV outputs go into `results/`. Seeds and simulation conditions are recorded. The trial CSV includes joint-angular error, complete-set SR3, and (for close-source cases) strict resolution using both matched spherical errors below `0.49 * separation` and estimated pair separation of at least `0.5 * separation`. The summarizer computes pooled RMSE as `sqrt(mean(trial_rmse ** 2))`, SR3 percentage, and strict-resolution percentage for each condition/variant. For the Table 2 ablation conditions, the IRIME-only runner includes `K=9` at 10 dB and close-source separations of `1.5° at 10 dB`, `0.5° at 20 dB`, and `0.75° at 20 dB`. These are separate conditions, not interchangeable metrics. The single-algorithm scripts provide a reproducible implementation of the stated experimental conditions; published comparison curves were generated separately and those external algorithm implementations are not part of this release. Runtime measurements will depend on local CPU and library versions.
 
 ### Principal protocol
 
