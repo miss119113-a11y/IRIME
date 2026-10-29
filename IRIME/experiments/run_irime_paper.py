@@ -65,6 +65,17 @@ def angular_errors(theta,phi,est_th,est_ph):
     sphere=np.rad2deg(np.arccos(np.clip(cos_arc,-1,1)))
     return dt,dp,sphere
 
+def estimated_pair_separation_deg(est_th, est_ph):
+    """Great-circle angular separation of two estimated source directions."""
+    if len(est_th) != 2 or len(est_ph) != 2:
+        return float('nan')
+    if not np.isfinite(est_th).all() or not np.isfinite(est_ph).all():
+        return float('nan')
+    a, b = np.deg2rad(np.asarray(est_th, dtype=float))
+    x, y = np.deg2rad(np.asarray(est_ph, dtype=float))
+    cos_sep = np.sin(x)*np.sin(y) + np.cos(x)*np.cos(y)*np.cos(a-b)
+    return float(np.rad2deg(np.arccos(np.clip(cos_sep, -1.0, 1.0))))
+
 def evaluate_once(k,L,snr,trial,kind='deterministic',h=2.5,variant='full',sep=None):
     seed=20261028+trial
     geo=np.random.default_rng(seed)
@@ -83,7 +94,18 @@ def evaluate_once(k,L,snr,trial,kind='deterministic',h=2.5,variant='full',sep=No
     da,de,sph=angular_errors(theta,phi,e_t,e_p)
     rmse=float(np.sqrt(np.mean(da**2+de**2)))
     sr3=float(np.all(sph<3.0))
-    return dict(trial=trial,seed=seed,k=k,L=L,snr_db=snr,h_deg=h,variant=variant,separation_deg='' if sep is None else sep,rmse_deg=rmse,complete_sr3=sr3,runtime_s=runtime)
+    # Strict close-source resolution criterion in the manuscript:
+    # both assignment-matched spherical errors < 0.49 Delta AND
+    # estimated pair separation >= 0.5 Delta.
+    estimated_sep = estimated_pair_separation_deg(e_t,e_p) if sep is not None else ''
+    strict = (int(bool(np.all(np.asarray(sph)<0.49*float(sep))
+                       and np.isfinite(estimated_sep)
+                       and estimated_sep>=0.5*float(sep)))
+              if sep is not None else '')
+    return dict(trial=trial,seed=seed,k=k,L=L,snr_db=snr,h_deg=h,
+                variant=variant,separation_deg='' if sep is None else sep,
+                rmse_deg=rmse,complete_sr3=sr3,strict_resolution=strict,
+                estimated_separation_deg=estimated_sep,runtime_s=runtime)
 
 def tasks(scenario):
     if scenario=='snr':return [(3,300,v,'deterministic',2.5,'full',None) for v in SNRS]
@@ -92,7 +114,7 @@ def tasks(scenario):
     if scenario=='resolution':return [(2,1024,10.,'deterministic',2.5,'full',sep) for sep in SPACINGS]
     if scenario=='sensitivity':return [(k,L,snr,'random' if k>2 else 'deterministic',h,'full',sep) for k,L,snr,sep in [(2,1024,10.,1.5),(2,1024,20.,1.),(7,300,10.,None)] for h in (2.,2.5,3.,3.5,4.)]
     if scenario=='timing':return [(3,300,0.,'deterministic',2.5,'full',None)]
-    if scenario=='ablation':return [(k,L,snr,'random' if k>2 else 'deterministic',2.5,v,sep) for k,L,snr,sep in [(9,300,10.,None),(2,1024,10.,1.5),(2,1024,20.,1.)] for v in ['p0','I','D','J','ID','IJ','DJ','full']]
+    if scenario=='ablation':return [(k,L,snr,'random' if k>2 else 'deterministic',2.5,v,sep) for k,L,snr,sep in [(9,300,10.,None),(2,1024,10.,1.5),(2,1024,20.,0.5),(2,1024,20.,0.75)] for v in ['p0','I','D','J','ID','IJ','DJ','full']]
     raise ValueError(scenario)
 
 def main():
